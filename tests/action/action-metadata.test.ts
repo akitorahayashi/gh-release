@@ -19,14 +19,24 @@ function loadActionFile(path: string): ActionFile {
 }
 
 describe('action metadata contracts', () => {
-  it('declares node24, message input contract, and rendered output', () => {
+  it('declares node24 and gh-release lifecycle contract', () => {
     const action = loadActionFile('action.yml')
     expect(action.runs.using).toBe('node24')
     expect(action.runs.main).toBe('dist/index.js')
-    expect(action.inputs.message.required).toBe(true)
-    expect(action.inputs.prefix.required).toBe(false)
-    expect(action.inputs.suffix.required).toBe(false)
-    expect(action.inputs.uppercase.required).toBe(false)
-    expect(Object.keys(action.outputs)).toContain('rendered-message')
+    expect(action.inputs.mode.required).toBe(true)
+    expect(action.inputs.token.required).toBe(true)
+    expect(action.inputs.tag.required).toBe(false)
+    expect(action.inputs.release_id.required).toBe(false)
+    expect(Object.keys(action.outputs)).toEqual(
+      expect.arrayContaining([
+        'release_id',
+        'upload_url',
+        'html_url',
+        'tag_name',
+        'created',
+        'draft',
+        'uploaded_assets',
+      ]),
+    )
   })
 })

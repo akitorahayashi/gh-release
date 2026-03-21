@@ -1,14 +1,14 @@
 import * as core from '@actions/core'
-import { emitRenderedMessageOutput } from './action/outputs'
+import { emitActionOutputs } from './action/outputs'
 import { resolveActionRequest } from './action/request'
-import { renderMessage } from './app/render-message'
+import { executeRequest } from './app/execute-request'
 
 async function run(): Promise<void> {
   const request = resolveActionRequest()
-  const renderedMessage = renderMessage(request)
+  const result = await executeRequest(request)
 
-  emitRenderedMessageOutput(renderedMessage)
-  core.debug('Rendered message generated successfully.')
+  emitActionOutputs(result)
+  core.debug(`Release lifecycle mode '${request.mode}' completed successfully.`)
 }
 
 if (require.main === module) {

@@ -1,22 +1,77 @@
-name: act-tmpl
-description: Render a message from action inputs
+name: gh-release
+description: Manage GitHub Release lifecycle in explicit prepare, upload, and publish phases
 inputs:
-  message:
-    description: Base message text to render
+  mode:
+    description: Release lifecycle mode (prepare, upload, publish)
     required: true
-  prefix:
-    description: Optional prefix inserted before the message
+  repository:
+    description: Target repository in owner/repo format; defaults to current workflow repository
     required: false
-  suffix:
-    description: Optional suffix appended after the message
+  token:
+    description: GitHub token with repository release permissions
+    required: true
+  tag:
+    description: Tag name for release preparation
     required: false
-  uppercase:
-    description: Optional flag to convert the rendered message to uppercase
+  create:
+    description: Create a draft release when no release exists for the tag
     required: false
     default: false
+  name:
+    description: Release name applied by prepare or publish metadata ownership
+    required: false
+  body:
+    description: Release body text applied by prepare or publish metadata ownership
+    required: false
+  body_path:
+    description: Path to a markdown file used as release body text
+    required: false
+  generate_notes:
+    description: Generate GitHub release notes during prepare or publish
+    required: false
+    default: false
+  prerelease:
+    description: Mark release as prerelease during prepare or publish
+    required: false
+    default: false
+  make_latest:
+    description: Latest-release setting for prepare or publish (true, false, legacy)
+    required: false
+  release_id:
+    description: Existing release identifier required by upload and publish
+    required: false
+  files:
+    description: Newline-separated file paths or glob patterns uploaded in upload mode
+    required: false
+  overwrite:
+    description: Replace existing assets with the same filename in upload mode
+    required: false
+    default: false
+  fail_on_unmatched_files:
+    description: Fail upload mode when no files match
+    required: false
+    default: true
+  working_directory:
+    description: Base directory for file matching in upload mode
+    required: false
+  publish:
+    description: Require explicit true to publish a draft release in publish mode
+    required: false
 outputs:
-  rendered-message:
-    description: Final rendered message output
+  release_id:
+    description: Canonical release identifier
+  upload_url:
+    description: Canonical release upload URL
+  html_url:
+    description: Canonical release HTML URL
+  tag_name:
+    description: Canonical release tag name
+  created:
+    description: True when prepare mode created a new release
+  draft:
+    description: Current draft state of the canonical release
+  uploaded_assets:
+    description: JSON array of uploaded assets from upload mode
 runs:
   using: node24
   main: dist/index.js

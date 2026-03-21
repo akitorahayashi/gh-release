@@ -1,7 +1,7 @@
 {
-  "name": "act-tmpl",
+  "name": "gh-release",
   "version": "0.1.0",
-  "description": "TypeScript GitHub Action template repository",
+  "description": "GitHub Action for explicit GitHub Release lifecycle operations",
   "private": true,
   "license": "UNLICENSED",
   "engines": {
@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@actions/github": "^6.0.0"
+    "@actions/github": "^6.0.0",
+    "fast-glob": "^3.3.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.5",

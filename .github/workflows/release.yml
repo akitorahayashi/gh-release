@@ -100,8 +100,20 @@ jobs:
           git push origin "refs/tags/${RELEASE_TAG}"
           git push origin "refs/tags/${MAJOR_TAG}" --force
 
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+      - id: prepare-release
+        name: Prepare GitHub Release
+        uses: ./
         with:
-          tag_name: ${{ needs.validate-release.outputs.release_tag }}
-          generate_release_notes: true
+          mode: prepare
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.validate-release.outputs.release_tag }}
+          create: true
+          generate_notes: true
+
+      - name: Publish GitHub Release
+        uses: ./
+        with:
+          mode: publish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release_id: ${{ steps.prepare-release.outputs.release_id }}
+          publish: true

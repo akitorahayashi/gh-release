@@ -1,45 +1,70 @@
-# act-tmpl
+# gh-release
 
-`act-tmpl` is a TypeScript GitHub Action template repository. It ships a minimal but complete action that renders a message from inputs and emits the rendered value as an action output.
+gh-release is a TypeScript GitHub Action that mutates GitHub Releases in explicit lifecycle phases.
 
-The repository demonstrates a reusable delivery foundation:
+The action separates release preparation, asset upload, and publication so workflows can run matrix builds in parallel without mixed release ownership.
 
-- release-managed `dist/` packaging on `main`
-- split reusable workflows under `.github/workflows/`
-- `just` as the local task surface
-- runtime boundaries organized as `index -> action -> app -> domain`
+## Lifecycle Model
+
+1. Prepare one draft release for one tag.
+2. Build artifacts in parallel jobs.
+3. Upload assets from each build job to the prepared release.
+4. Publish the prepared release in one final job.
 
 ## Quick Start
 
+Prepare:
+
 ```yaml
-- uses: akitorahayashi/act-tmpl@v1
+- id: prepare
+  uses: akitorahayashi/gh-release@v1
   with:
-    message: hello world
-    prefix: greeting
-    suffix: done
-    uppercase: false
+    mode: prepare
+    token: ${{ secrets.GITHUB_TOKEN }}
+    tag: ${{ github.ref_name }}
+    create: true
+    name: Release ${{ github.ref_name }}
 ```
 
-## Action Contract
+Upload:
 
-Inputs:
+```yaml
+- uses: akitorahayashi/gh-release@v1
+  with:
+    mode: upload
+    token: ${{ secrets.GITHUB_TOKEN }}
+    release_id: ${{ needs.prepare.outputs.release_id }}
+    files: |
+      dist/*.tar.gz
+    overwrite: true
+```
 
-- `message` (required)
-- `prefix` (optional)
-- `suffix` (optional)
-- `uppercase` (optional, default: false)
+Publish:
 
-Outputs:
+```yaml
+- uses: akitorahayashi/gh-release@v1
+  with:
+    mode: publish
+    token: ${{ secrets.GITHUB_TOKEN }}
+    release_id: ${{ needs.prepare.outputs.release_id }}
+    publish: true
+```
 
-- `rendered-message`
+## Outputs
 
-## Runtime Flow
+- release_id
+- upload_url
+- html_url
+- tag_name
+- created
+- draft
+- uploaded_assets
 
-1. Read inputs from the GitHub Actions boundary.
-2. Normalize inputs into an action request.
-3. Render a final string in the app and domain boundaries.
-4. Emit `rendered-message`.
-5. Log the rendered value.
+## Validation
+
+- just fix
+- just check
+- just test
 
 ## Documentation
 

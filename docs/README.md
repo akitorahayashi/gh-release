@@ -1,17 +1,17 @@
 # Documentation
 
-This directory is the central documentation index for `act-tmpl`.
+This directory is the central documentation index for gh-release.
 
 ## Usage
 
-- [Usage](usage.md): workflow examples, install modes, outputs, and local verification entrypoints
+- [Usage](usage.md): prepare, upload, publish workflow patterns and verification commands
 
-The action usage describes message rendering inputs and `rendered-message` output behavior.
+The usage document describes explicit release lifecycle ownership across workflow jobs.
 
 ## Architecture
 
-- [Architecture Boundary](architecture/boundary.md): runtime boundaries, dependency direction, execution flow, and failure invariants
+- [Architecture Boundary](architecture/boundary.md): runtime boundaries, dependency direction, lifecycle use cases, and failure invariants
 
 ## Configuration
 
-- [Action Inputs](configuration/inputs.md): action inputs, defaults, and output values
+- [Action Inputs](configuration/inputs.md): action inputs, phase ownership rules, and output values
