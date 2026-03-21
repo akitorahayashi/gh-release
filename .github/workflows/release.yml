@@ -100,27 +100,6 @@ jobs:
           git push origin "refs/tags/${RELEASE_TAG}"
           git push origin "refs/tags/${MAJOR_TAG}" --force
 
-      - name: Wait For Tag Visibility
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.validate-release.outputs.release_tag }}
-          MAJOR_TAG: ${{ needs.validate-release.outputs.major_tag }}
-        run: |
-          set -euo pipefail
-
-          for attempt in {1..10}; do
-            if \
-              gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1 && \
-              gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${MAJOR_TAG}" >/dev/null 2>&1; then
-              exit 0
-            fi
-
-            sleep 2
-          done
-
-          echo "Release tags '${RELEASE_TAG}' and '${MAJOR_TAG}' are not yet visible through the GitHub API." >&2
-          exit 1
-
       - id: prepare-release
         name: Prepare Semver Release
         uses: ./
