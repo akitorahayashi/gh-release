@@ -105,4 +105,41 @@ describe('uploadReleaseAssets', () => {
     expect(result.uploadedAssets).toHaveLength(1)
     expect(api.deleteReleaseAsset).toHaveBeenCalledWith('o/r', 10)
   })
+
+  it('fails when multiple matched files resolve to the same asset name', async () => {
+    vi.mocked(resolveUploadFiles).mockResolvedValue([
+      { path: '/tmp/linux/a.tgz', name: 'a.tgz' },
+      { path: '/tmp/macos/a.tgz', name: 'a.tgz' },
+    ])
+
+    const api = buildApi({
+      getReleaseById: vi.fn().mockResolvedValue({
+        id: 3,
+        tagName: 'v1',
+        uploadUrl: 'u',
+        htmlUrl: 'h',
+        draft: true,
+        prerelease: false,
+        assets: [],
+      }),
+    })
+
+    await expect(
+      uploadReleaseAssets(
+        {
+          mode: 'upload',
+          repository: 'o/r',
+          token: 't',
+          releaseId: 3,
+          patterns: ['dist/**/*.tgz'],
+          overwrite: false,
+          failOnUnmatchedFiles: true,
+          workingDirectory: '.',
+        },
+        api,
+      ),
+    ).rejects.toThrow(
+      'Upload matched multiple files that resolve to the same asset name: a.tgz.',
+    )
+  })
 })

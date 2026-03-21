@@ -221,18 +221,26 @@ export function createGitHubReleaseApi(token: string): GitHubReleaseApi {
       return {
         name: metadata.name,
         body: resolvedBody,
-        generateNotes: metadata.generateNotes,
-        prerelease: metadata.prerelease,
-        makeLatest: metadata.makeLatest,
+        generateNotes: metadata.generateNotesProvided
+          ? metadata.generateNotes
+          : undefined,
+        prerelease: metadata.prereleaseProvided
+          ? metadata.prerelease
+          : undefined,
+        makeLatest: metadata.makeLatestProvided
+          ? metadata.makeLatest
+          : undefined,
       }
     }
 
     return {
       name: metadata.name,
       body: metadata.body,
-      generateNotes: metadata.generateNotes,
-      prerelease: metadata.prerelease,
-      makeLatest: metadata.makeLatest,
+      generateNotes: metadata.generateNotesProvided
+        ? metadata.generateNotes
+        : undefined,
+      prerelease: metadata.prereleaseProvided ? metadata.prerelease : undefined,
+      makeLatest: metadata.makeLatestProvided ? metadata.makeLatest : undefined,
     }
   }
 

@@ -5,7 +5,10 @@ import {
   type GitHubReleaseApi,
 } from '../adapters/github/release-api'
 import { resolveUploadFiles } from '../adapters/fs/release-files'
-import { ensureUploadHasPatterns } from '../domain/release-asset-plan'
+import {
+  assertUniqueUploadAssetNames,
+  ensureUploadHasPatterns,
+} from '../domain/release-asset-plan'
 
 export async function uploadReleaseAssets(
   request: UploadActionRequest,
@@ -21,6 +24,7 @@ export async function uploadReleaseAssets(
     request.patterns,
     request.workingDirectory,
   )
+  assertUniqueUploadAssetNames(files.map((file) => file.name))
 
   if (files.length === 0) {
     if (request.failOnUnmatchedFiles) {

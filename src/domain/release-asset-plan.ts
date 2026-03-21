@@ -24,3 +24,23 @@ export function ensureUploadHasPatterns(patterns: string[]): void {
     )
   }
 }
+
+export function assertUniqueUploadAssetNames(names: string[]): void {
+  const duplicates = new Set<string>()
+  const seen = new Set<string>()
+
+  for (const name of names) {
+    if (seen.has(name)) {
+      duplicates.add(name)
+      continue
+    }
+
+    seen.add(name)
+  }
+
+  if (duplicates.size > 0) {
+    throw new Error(
+      `Upload matched multiple files that resolve to the same asset name: ${[...duplicates].join(', ')}.`,
+    )
+  }
+}

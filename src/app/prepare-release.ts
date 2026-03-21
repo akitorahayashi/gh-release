@@ -21,11 +21,17 @@ export async function prepareRelease(
 
   const existing = await api.getReleaseByTag(request.repository, request.tag)
   if (existing) {
+    if (!existing.draft) {
+      throw new Error(
+        `Release for tag '${request.tag}' already exists and is published. Prepare mode only manages draft releases.`,
+      )
+    }
+
     const updated = await api.updateRelease(
       request.repository,
       existing.id,
       metadata,
-      true,
+      existing.draft,
     )
     return {
       releaseId: updated.id,

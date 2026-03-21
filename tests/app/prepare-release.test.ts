@@ -66,6 +66,45 @@ describe('prepareRelease', () => {
     expect(result.releaseId).toBe(7)
   })
 
+  it('fails when prepare targets an already published release', async () => {
+    const api = buildApi({
+      getReleaseByTag: vi.fn().mockResolvedValue({
+        id: 7,
+        tagName: 'v1',
+        uploadUrl: 'u',
+        htmlUrl: 'h',
+        draft: false,
+        prerelease: false,
+        assets: [],
+      }),
+      resolveMetadata: vi.fn().mockResolvedValue({}),
+    })
+
+    await expect(
+      prepareRelease(
+        {
+          mode: 'prepare',
+          repository: 'o/r',
+          token: 't',
+          tag: 'v1',
+          create: true,
+          metadata: {
+            name: undefined,
+            body: undefined,
+            bodyPath: undefined,
+            generateNotes: false,
+            generateNotesProvided: false,
+            prerelease: false,
+            prereleaseProvided: false,
+            makeLatest: undefined,
+            makeLatestProvided: false,
+          },
+        },
+        api,
+      ),
+    ).rejects.toThrow("Release for tag 'v1' already exists and is published.")
+  })
+
   it('fails when release is missing and create is false', async () => {
     const api = buildApi({
       getReleaseByTag: vi.fn().mockResolvedValue(undefined),
