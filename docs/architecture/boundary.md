@@ -2,14 +2,14 @@
 
 ## Repository Boundary
 
-`act-tmpl` is a single-action template repository. The repository owns a minimal GitHub Action that reads inputs, renders a message, and emits one output.
+gh-release is a single-action repository that owns GitHub Release mutation for an already chosen tag.
 
 The repository surfaces are:
 
 - `action.yml`: public action contract
-- `src/`: TypeScript runtime organized by action, app, and domain boundaries
+- `src/`: TypeScript runtime organized by action, app, domain, and adapters boundaries
 - `dist/`: release-managed package output used by GitHub Actions at tag resolution time
-- `tests/`: repository-owned boundary tests under `tests/action`, `tests/app`, and `tests/domain`
+- `tests/`: repository-owned boundary tests under `tests/action`, `tests/app`, `tests/domain`, and `tests/adapters`
 
 ## Runtime Boundaries
 
@@ -17,46 +17,53 @@ The runtime boundaries are:
 
 - `src/index.ts`: bootstrap and top-level orchestration only
 - `src/action/`: action boundary input reading, output emission, and request normalization
-- `src/app/`: use-case orchestration for message rendering
-- `src/domain/`: pure message template rendering
+- `src/app/`: lifecycle use cases for prepare, upload, and publish
+- `src/domain/`: pure mode parsing, write policy, target validation, and retry rules
+- `src/adapters/`: GitHub API, filesystem, and time integrations
 
 ## Dependency Direction
 
 Runtime dependencies follow this direction:
 
 ```text
-index -> action -> app -> domain
+index -> action
+index -> app
 action -> domain
+app -> domain
+app -> adapters
+adapters -> domain
 domain -> none
 ```
 
-`domain` remains pure and does not depend on `action` or `app`.
+domain remains pure and does not depend on action, app, or adapters.
 
 ## Runtime Execution Flow
 
 The action runtime executes this sequence:
 
-1. Read required and optional action inputs.
-2. Normalize an action request from input values.
-3. Render the final message string.
-4. Emit `rendered-message`.
-5. Log the rendered value.
+1. Read required and optional lifecycle inputs.
+2. Normalize one lifecycle request (`prepare`, `upload`, or `publish`).
+3. Execute one use case in the app boundary.
+4. Emit normalized release outputs.
+5. Log completion state.
 
-## Reusable Baseline
+## Lifecycle Invariants
 
-The repository demonstrates a reusable TypeScript GitHub Action baseline:
+The action keeps release ownership deterministic with these invariants:
 
-- `action.yml`
-- minimal `src/index.ts` bootstrap
-- boundary-owned runtime directories (`src/action`, `src/app`, `src/domain`)
-- boundary-owned tests (`tests/action`, `tests/app`, `tests/domain`)
-- standard validation and release packaging (`just`, `dist/`)
+- prepare can resolve or create a draft release for a tag
+- upload mutates assets only and never creates or publishes releases
+- publish transitions draft state and does not upload files
+- bounded retry is limited to retryable release mutation paths
 
 ## Failure Invariants
 
 The action fails explicitly when:
 
-- the `message` input is missing or blank
-- runtime boundaries receive invalid input values
+- required mode-specific identifiers are missing
+- metadata ownership rules are violated by mode
+- upload file matching fails under strict unmatched policy
+- overwrite is disabled and asset name collision occurs
+- GitHub API returns terminal validation or authorization errors
 
 No silent fallback paths are used.

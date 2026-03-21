@@ -15,3 +15,27 @@ export function readOptionalInput(name: string): string | undefined {
   }
   return value.trim()
 }
+
+export function readBooleanInput(name: string, defaultValue = false): boolean {
+  const value = readOptionalInput(name)
+  if (!value) {
+    return defaultValue
+  }
+
+  switch (value.toLowerCase()) {
+    case '1':
+    case 'true':
+    case 'yes':
+    case 'on':
+      return true
+    case '0':
+    case 'false':
+    case 'no':
+    case 'off':
+      return false
+    default:
+      throw new Error(
+        `Input '${name}' must be a boolean-like value (true/false/1/0/yes/no/on/off). Received: '${value}'.`,
+      )
+  }
+}
