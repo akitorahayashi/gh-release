@@ -100,26 +100,29 @@ jobs:
           git push origin "refs/tags/${RELEASE_TAG}"
           git push origin "refs/tags/${MAJOR_TAG}" --force
 
-      - name: Wait For Release Tag Visibility
+      - name: Wait For Tag Visibility
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.validate-release.outputs.release_tag }}
+          MAJOR_TAG: ${{ needs.validate-release.outputs.major_tag }}
         run: |
           set -euo pipefail
 
           for attempt in {1..10}; do
-            if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            if \
+              gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1 && \
+              gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${MAJOR_TAG}" >/dev/null 2>&1; then
               exit 0
             fi
 
             sleep 2
           done
 
-          echo "Release tag '${RELEASE_TAG}' is not yet visible through the GitHub API." >&2
+          echo "Release tags '${RELEASE_TAG}' and '${MAJOR_TAG}' are not yet visible through the GitHub API." >&2
           exit 1
 
       - id: prepare-release
-        name: Prepare GitHub Release
+        name: Prepare Semver Release
         uses: ./
         with:
           mode: prepare
@@ -128,10 +131,40 @@ jobs:
           create: true
           generate_notes: true
 
-      - name: Publish GitHub Release
+      - name: Publish Semver Release
         uses: ./
         with:
           mode: publish
           token: ${{ secrets.GITHUB_TOKEN }}
           release_id: ${{ steps.prepare-release.outputs.release_id }}
+          publish: true
+
+      - name: Delete Existing Major Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAJOR_TAG: ${{ needs.validate-release.outputs.major_tag }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "${MAJOR_TAG}" >/dev/null 2>&1; then
+            gh release delete "${MAJOR_TAG}" --yes
+          fi
+
+      - id: prepare-major-release
+        name: Prepare Major Release
+        uses: ./
+        with:
+          mode: prepare
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.validate-release.outputs.major_tag }}
+          create: true
+          generate_notes: true
+          make_latest: false
+
+      - name: Publish Major Release
+        uses: ./
+        with:
+          mode: publish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release_id: ${{ steps.prepare-major-release.outputs.release_id }}
           publish: true
