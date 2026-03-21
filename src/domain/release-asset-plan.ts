@@ -25,7 +25,10 @@ export function ensureUploadHasPatterns(patterns: string[]): void {
   }
 }
 
-export function assertUniqueUploadAssetNames(names: string[]): void {
+export function assertUniqueUploadAssetNames(
+  names: string[],
+  workingDirectory: string,
+): void {
   const duplicates = new Set<string>()
   const seen = new Set<string>()
 
@@ -40,7 +43,7 @@ export function assertUniqueUploadAssetNames(names: string[]): void {
 
   if (duplicates.size > 0) {
     throw new Error(
-      `Upload matched multiple files that resolve to the same asset name: ${[...duplicates].join(', ')}.`,
+      `Upload matched multiple files in working directory '${workingDirectory}' that resolve to the same asset name: ${[...duplicates].join(', ')}.`,
     )
   }
 }

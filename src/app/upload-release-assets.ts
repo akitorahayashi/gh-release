@@ -24,7 +24,10 @@ export async function uploadReleaseAssets(
     request.patterns,
     request.workingDirectory,
   )
-  assertUniqueUploadAssetNames(files.map((file) => file.name))
+  assertUniqueUploadAssetNames(
+    files.map((file) => file.name),
+    request.workingDirectory,
+  )
 
   if (files.length === 0) {
     if (request.failOnUnmatchedFiles) {
@@ -32,6 +35,10 @@ export async function uploadReleaseAssets(
         "No files matched input 'files' and 'fail_on_unmatched_files' is true.",
       )
     }
+
+    console.log(
+      `No files matched upload patterns in working directory '${request.workingDirectory}'. Skipping asset upload because 'fail_on_unmatched_files' is false.`,
+    )
 
     return {
       releaseId: release.id,

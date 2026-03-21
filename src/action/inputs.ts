@@ -43,7 +43,7 @@ export function parseOptionalBooleanInput(
       return false
     default:
       throw new Error(
-        `Input '${name}' must be a boolean-like value (true/false/1/0/yes/no/on/off). Received: '${value}'.`,
+        `Input '${name}' must be one of: true, false, 1, 0, yes, no, on, off (case-insensitive). Received: '${value}'.`,
       )
   }
 }

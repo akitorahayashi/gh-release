@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import { readFile } from 'node:fs/promises'
 import type {
   ReleaseMetadataInput,
   ResolvedReleaseMetadata,
@@ -282,6 +283,5 @@ function parseRepository(repository: string): { owner: string; repo: string } {
 }
 
 async function readBinary(path: string): Promise<Buffer> {
-  const fs = await import('node:fs/promises')
-  return fs.readFile(path)
+  return readFile(path)
 }

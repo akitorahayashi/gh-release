@@ -103,9 +103,9 @@ function resolveMetadataInputs(): ReleaseMetadataInput {
   const name = readOptionalInput('name')
   const body = readOptionalInput('body')
   const bodyPath = readOptionalInput('body_path')
-  const generateNotesInput = readOptionalInput('generate_notes')
-  const prereleaseInput = readOptionalInput('prerelease')
-  const makeLatestInput = readOptionalInput('make_latest')
+  const generateNotesInputValue = readOptionalInput('generate_notes')
+  const prereleaseInputValue = readOptionalInput('prerelease')
+  const makeLatestInputValue = readOptionalInput('make_latest')
 
   validateBodyInputs(body, bodyPath)
 
@@ -115,13 +115,17 @@ function resolveMetadataInputs(): ReleaseMetadataInput {
     bodyPath,
     generateNotes: parseOptionalBooleanInput(
       'generate_notes',
-      generateNotesInput,
+      generateNotesInputValue,
       false,
     ),
-    generateNotesProvided: generateNotesInput !== undefined,
-    prerelease: parseOptionalBooleanInput('prerelease', prereleaseInput, false),
-    prereleaseProvided: prereleaseInput !== undefined,
-    makeLatest: normalizeMakeLatest(makeLatestInput),
-    makeLatestProvided: makeLatestInput !== undefined,
+    generateNotesProvided: generateNotesInputValue !== undefined,
+    prerelease: parseOptionalBooleanInput(
+      'prerelease',
+      prereleaseInputValue,
+      false,
+    ),
+    prereleaseProvided: prereleaseInputValue !== undefined,
+    makeLatest: normalizeMakeLatest(makeLatestInputValue),
+    makeLatestProvided: makeLatestInputValue !== undefined,
   }
 }

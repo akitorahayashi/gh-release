@@ -12,6 +12,7 @@ import {
   isRetryableGitHubStatus,
   releaseMutationRetryPolicy,
 } from '../domain/retry-policy'
+import type { ReleaseRecord } from '../domain/release-record'
 
 export async function prepareRelease(
   request: PrepareActionRequest,
@@ -33,15 +34,7 @@ export async function prepareRelease(
       metadata,
       existing.draft,
     )
-    return {
-      releaseId: updated.id,
-      uploadUrl: updated.uploadUrl,
-      htmlUrl: updated.htmlUrl,
-      tagName: updated.tagName,
-      created: false,
-      draft: updated.draft,
-      uploadedAssets: [],
-    }
+    return toActionResult(updated, false)
   }
 
   if (!request.create) {
@@ -61,15 +54,7 @@ export async function prepareRelease(
         request.tag,
         metadata,
       )
-      return {
-        releaseId: created.id,
-        uploadUrl: created.uploadUrl,
-        htmlUrl: created.htmlUrl,
-        tagName: created.tagName,
-        created: true,
-        draft: created.draft,
-        uploadedAssets: [],
-      }
+      return toActionResult(created, true)
     } catch (error: unknown) {
       if (!(error instanceof GitHubApiError)) {
         throw error
@@ -81,15 +66,7 @@ export async function prepareRelease(
           request.tag,
         )
         if (converged) {
-          return {
-            releaseId: converged.id,
-            uploadUrl: converged.uploadUrl,
-            htmlUrl: converged.htmlUrl,
-            tagName: converged.tagName,
-            created: false,
-            draft: converged.draft,
-            uploadedAssets: [],
-          }
+          return toActionResult(converged, false)
         }
       }
 
@@ -108,4 +85,19 @@ export async function prepareRelease(
   }
 
   throw new Error('Failed to prepare release after bounded retry.')
+}
+
+function toActionResult(
+  release: ReleaseRecord,
+  created: boolean,
+): ActionResult {
+  return {
+    releaseId: release.id,
+    uploadUrl: release.uploadUrl,
+    htmlUrl: release.htmlUrl,
+    tagName: release.tagName,
+    created,
+    draft: release.draft,
+    uploadedAssets: [],
+  }
 }

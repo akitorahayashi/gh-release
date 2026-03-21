@@ -139,7 +139,7 @@ describe('uploadReleaseAssets', () => {
         api,
       ),
     ).rejects.toThrow(
-      'Upload matched multiple files that resolve to the same asset name: a.tgz.',
+      "Upload matched multiple files in working directory '.' that resolve to the same asset name: a.tgz.",
     )
   })
 })
