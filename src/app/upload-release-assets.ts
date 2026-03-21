@@ -47,9 +47,8 @@ export async function uploadReleaseAssets(
   const existingByName = new Map(
     existingAssets.map((asset) => [asset.name, asset]),
   )
-  const uploadedAssets = []
 
-  for (const file of files) {
+  const uploadPromises = files.map(async (file) => {
     const existing = existingByName.get(file.name)
     if (existing) {
       if (!request.overwrite) {
@@ -60,14 +59,15 @@ export async function uploadReleaseAssets(
       await api.deleteReleaseAsset(request.repository, existing.id)
     }
 
-    const uploaded = await api.uploadReleaseAsset(
+    return api.uploadReleaseAsset(
       request.repository,
       release,
       file.name,
       file.path,
     )
-    uploadedAssets.push(uploaded)
-  }
+  })
+
+  const uploadedAssets = await Promise.all(uploadPromises)
 
   const refreshedRelease = await api.getReleaseById(
     request.repository,

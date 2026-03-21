@@ -18,6 +18,14 @@ export function readOptionalInput(name: string): string | undefined {
 
 export function readBooleanInput(name: string, defaultValue = false): boolean {
   const value = readOptionalInput(name)
+  return parseOptionalBooleanInput(name, value, defaultValue)
+}
+
+export function parseOptionalBooleanInput(
+  name: string,
+  value: string | undefined,
+  defaultValue = false,
+): boolean {
   if (!value) {
     return defaultValue
   }

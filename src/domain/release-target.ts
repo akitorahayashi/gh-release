@@ -29,6 +29,12 @@ export function normalizeTag(value: string): string {
 
 export function parseReleaseId(value: string): number {
   const trimmed = value.trim()
+  if (!/^\d+$/.test(trimmed)) {
+    throw new Error(
+      `Input 'release_id' must be a positive integer. Received: '${value}'.`,
+    )
+  }
+
   const parsed = Number.parseInt(trimmed, 10)
 
   if (!Number.isInteger(parsed) || parsed <= 0) {

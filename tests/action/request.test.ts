@@ -76,8 +76,11 @@ describe('resolveActionRequest', () => {
         body: 'Notes',
         bodyPath: undefined,
         generateNotes: true,
+        generateNotesProvided: true,
         prerelease: false,
+        prereleaseProvided: true,
         makeLatest: 'legacy',
+        makeLatestProvided: true,
       },
     })
   })
@@ -109,8 +112,11 @@ describe('resolveActionRequest', () => {
         body: undefined,
         bodyPath: undefined,
         generateNotes: false,
+        generateNotesProvided: false,
         prerelease: false,
+        prereleaseProvided: false,
         makeLatest: undefined,
+        makeLatestProvided: false,
       },
     })
   })
@@ -201,9 +207,33 @@ describe('resolveActionRequest', () => {
         body: undefined,
         bodyPath: undefined,
         generateNotes: false,
+        generateNotesProvided: false,
         prerelease: false,
+        prereleaseProvided: false,
         makeLatest: undefined,
+        makeLatestProvided: false,
       },
     })
+  })
+
+  it('rejects malformed release_id values', () => {
+    mockedGetInput.mockImplementation((name: string) => {
+      switch (name) {
+        case 'mode':
+          return 'upload'
+        case 'token':
+          return 'tok'
+        case 'release_id':
+          return '123abc'
+        case 'files':
+          return 'dist/a.tgz'
+        default:
+          return ''
+      }
+    })
+
+    expect(() => resolveActionRequest()).toThrow(
+      "Input 'release_id' must be a positive integer.",
+    )
   })
 })

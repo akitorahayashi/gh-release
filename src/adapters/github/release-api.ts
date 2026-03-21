@@ -148,13 +148,26 @@ export function createGitHubReleaseApi(token: string): GitHubReleaseApi {
   ): Promise<ReleaseAssetRecord[]> {
     const { owner, repo } = parseRepository(repository)
     try {
-      const response = await octokit.rest.repos.listReleaseAssets({
-        owner,
-        repo,
-        release_id: releaseId,
-        per_page: 100,
-      })
-      return response.data.map(mapReleaseAsset)
+      const assets: ReleaseAssetRecord[] = []
+      let page = 1
+
+      while (true) {
+        const response = await octokit.rest.repos.listReleaseAssets({
+          owner,
+          repo,
+          release_id: releaseId,
+          per_page: 100,
+          page,
+        })
+
+        assets.push(...response.data.map(mapReleaseAsset))
+
+        if (response.data.length < 100) {
+          return assets
+        }
+
+        page += 1
+      }
     } catch (error: unknown) {
       throw toGitHubApiError(error)
     }
@@ -190,6 +203,7 @@ export function createGitHubReleaseApi(token: string): GitHubReleaseApi {
         repo,
         release_id: release.id,
         name: fileName,
+        // Octokit runtime accepts Buffer, but current type narrows data to string.
         data: assetData as unknown as string,
       })
       return mapReleaseAsset(uploadResponse.data)

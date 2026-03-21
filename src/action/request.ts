@@ -1,6 +1,5 @@
 import * as github from '@actions/github'
 import {
-  type MakeLatestSetting,
   normalizeMakeLatest,
   type ReleaseMetadataInput,
   validateBodyInputs,
@@ -14,6 +13,7 @@ import {
   parseReleaseId,
 } from '../domain/release-target'
 import {
+  parseOptionalBooleanInput,
   readBooleanInput,
   readOptionalInput,
   readRequiredInput,
@@ -103,16 +103,25 @@ function resolveMetadataInputs(): ReleaseMetadataInput {
   const name = readOptionalInput('name')
   const body = readOptionalInput('body')
   const bodyPath = readOptionalInput('body_path')
+  const generateNotesInput = readOptionalInput('generate_notes')
+  const prereleaseInput = readOptionalInput('prerelease')
+  const makeLatestInput = readOptionalInput('make_latest')
+
   validateBodyInputs(body, bodyPath)
 
   return {
     name,
     body,
     bodyPath,
-    generateNotes: readBooleanInput('generate_notes', false),
-    prerelease: readBooleanInput('prerelease', false),
-    makeLatest: normalizeMakeLatest(readOptionalInput('make_latest')) as
-      | MakeLatestSetting
-      | undefined,
+    generateNotes: parseOptionalBooleanInput(
+      'generate_notes',
+      generateNotesInput,
+      false,
+    ),
+    generateNotesProvided: generateNotesInput !== undefined,
+    prerelease: parseOptionalBooleanInput('prerelease', prereleaseInput, false),
+    prereleaseProvided: prereleaseInput !== undefined,
+    makeLatest: normalizeMakeLatest(makeLatestInput),
+    makeLatestProvided: makeLatestInput !== undefined,
   }
 }

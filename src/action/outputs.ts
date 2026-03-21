@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import type { ReleaseAssetRecord } from '../domain/release-record'
 
 export interface ActionResult {
   releaseId: number
@@ -7,13 +8,7 @@ export interface ActionResult {
   tagName: string
   created: boolean
   draft: boolean
-  uploadedAssets: Array<{
-    id: number
-    name: string
-    size: number
-    contentType: string
-    downloadUrl: string
-  }>
+  uploadedAssets: ReadonlyArray<ReleaseAssetRecord>
 }
 
 export function emitActionOutputs(result: ActionResult): void {

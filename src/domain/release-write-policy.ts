@@ -9,9 +9,9 @@ export function assertMetadataOwnership(
     metadata.name !== undefined ||
     metadata.body !== undefined ||
     metadata.bodyPath !== undefined ||
-    metadata.generateNotes ||
-    metadata.prerelease ||
-    metadata.makeLatest !== undefined
+    metadata.generateNotesProvided ||
+    metadata.prereleaseProvided ||
+    metadata.makeLatestProvided
 
   if (mode === 'upload' && hasMetadata) {
     throw new Error(

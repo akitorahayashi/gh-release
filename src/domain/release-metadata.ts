@@ -5,8 +5,11 @@ export interface ReleaseMetadataInput {
   body?: string
   bodyPath?: string
   generateNotes: boolean
+  generateNotesProvided: boolean
   prerelease: boolean
+  prereleaseProvided: boolean
   makeLatest?: MakeLatestSetting
+  makeLatestProvided: boolean
 }
 
 export interface ResolvedReleaseMetadata {

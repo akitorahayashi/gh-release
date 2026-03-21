@@ -13,6 +13,7 @@ import {
   computeBackoffDelayMs,
   isRetryableGitHubStatus,
 } from '../../src/domain/retry-policy'
+import { parseReleaseId } from '../../src/domain/release-target'
 
 describe('domain contracts', () => {
   it('parses supported lifecycle modes', () => {
@@ -41,10 +42,21 @@ describe('domain contracts', () => {
         body: undefined,
         bodyPath: undefined,
         generateNotes: false,
+        generateNotesProvided: true,
         prerelease: false,
+        prereleaseProvided: false,
         makeLatest: undefined,
+        makeLatestProvided: false,
       }),
     ).toThrow()
+  })
+
+  it('rejects malformed release_id values', () => {
+    expect(() => parseReleaseId('123abc')).toThrow()
+    expect(() => parseReleaseId('')).toThrow()
+    expect(() => parseReleaseId('-')).toThrow()
+    expect(() => parseReleaseId('0')).toThrow()
+    expect(parseReleaseId('45')).toBe(45)
   })
 
   it('parses file patterns and requires at least one for upload execution', () => {
