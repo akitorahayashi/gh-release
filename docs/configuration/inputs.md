@@ -12,8 +12,8 @@ gh-release defines these inputs in action.yml:
 | name | no | empty | Release name for prepare or publish metadata ownership |
 | body | no | empty | Inline release body for prepare or publish |
 | body_path | no | empty | File path for release body content |
-| generate_notes | no | false | Generate release notes during prepare or publish |
-| prerelease | no | false | Set prerelease flag during prepare or publish |
+| generate_notes | no | empty | Generate release notes during prepare or publish |
+| prerelease | no | empty | Set prerelease flag during prepare or publish |
 | make_latest | no | empty | Latest-release setting: true, false, legacy |
 | release_id | upload/publish | none | Existing release identifier |
 | files | upload | none | Newline-separated file paths or glob patterns |
@@ -45,4 +45,4 @@ The action emits:
 ## Mode Safety
 
 Mode boundaries are strict: upload never creates or publishes releases, and publish never uploads assets.
-
+When `generate_notes` and `prerelease` are omitted, they remain unset at the action boundary and resolve to false behavior only in prepare or publish mode.

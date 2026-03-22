@@ -29,11 +29,9 @@ inputs:
   generate_notes:
     description: Generate GitHub release notes during prepare or publish
     required: false
-    default: false
   prerelease:
     description: Mark release as prerelease during prepare or publish
     required: false
-    default: false
   make_latest:
     description: Latest-release setting for prepare or publish (true, false, legacy)
     required: false

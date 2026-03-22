@@ -1,6 +1,6 @@
 {
   "name": "gh-release",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GitHub Action for explicit GitHub Release lifecycle operations",
   "private": true,
   "license": "UNLICENSED",

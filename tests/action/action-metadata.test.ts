@@ -8,7 +8,7 @@ interface ActionFile {
     using: string
     main: string
   }
-  inputs: Record<string, { required?: boolean }>
+  inputs: Record<string, { required?: boolean; default?: string | boolean }>
   outputs: Record<string, unknown>
 }
 
@@ -27,6 +27,8 @@ describe('action metadata contracts', () => {
     expect(action.inputs.token.required).toBe(true)
     expect(action.inputs.tag.required).toBe(false)
     expect(action.inputs.release_id.required).toBe(false)
+    expect(action.inputs.generate_notes.default).toBeUndefined()
+    expect(action.inputs.prerelease.default).toBeUndefined()
     expect(Object.keys(action.outputs)).toEqual(
       expect.arrayContaining([
         'release_id',
