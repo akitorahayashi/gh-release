@@ -20,14 +20,11 @@ export async function prepareRelease(
 ): Promise<ActionResult> {
   const metadata = await api.resolveMetadata(request.metadata)
 
-  const existing = await api.getReleaseByTag(request.repository, request.tag)
+  const existing = selectPrepareRelease(
+    request.tag,
+    await api.findReleasesByTag(request.repository, request.tag),
+  )
   if (existing) {
-    if (!existing.draft) {
-      throw new Error(
-        `Release for tag '${request.tag}' already exists and is published. Prepare mode only manages draft releases.`,
-      )
-    }
-
     const updated = await api.updateRelease(
       request.repository,
       existing.id,
@@ -61,9 +58,9 @@ export async function prepareRelease(
       }
 
       if (isConflictStatus(error.status)) {
-        const converged = await api.getReleaseByTag(
-          request.repository,
+        const converged = selectPrepareRelease(
           request.tag,
+          await api.findReleasesByTag(request.repository, request.tag),
         )
         if (converged) {
           return toActionResult(converged, false)
@@ -85,6 +82,30 @@ export async function prepareRelease(
   }
 
   throw new Error('Failed to prepare release after bounded retry.')
+}
+
+function selectPrepareRelease(
+  tag: string,
+  releases: ReleaseRecord[],
+): ReleaseRecord | undefined {
+  if (releases.length === 0) {
+    return undefined
+  }
+
+  if (releases.length > 1) {
+    throw new Error(
+      `Multiple releases already exist for tag '${tag}'. Prepare mode requires exactly one draft release or no release.`,
+    )
+  }
+
+  const [release] = releases
+  if (!release.draft) {
+    throw new Error(
+      `Release for tag '${tag}' already exists and is published. Prepare mode only manages draft releases.`,
+    )
+  }
+
+  return release
 }
 
 function toActionResult(

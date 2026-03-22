@@ -11,10 +11,7 @@ import type {
 import { mapRelease, mapReleaseAsset } from './release-mapper'
 
 export interface GitHubReleaseApi {
-  getReleaseByTag(
-    repository: string,
-    tag: string,
-  ): Promise<ReleaseRecord | undefined>
+  findReleasesByTag(repository: string, tag: string): Promise<ReleaseRecord[]>
   createDraftRelease(
     repository: string,
     tag: string,
@@ -56,23 +53,36 @@ export class GitHubApiError extends Error {
 export function createGitHubReleaseApi(token: string): GitHubReleaseApi {
   const octokit = github.getOctokit(token)
 
-  async function getReleaseByTag(
+  async function findReleasesByTag(
     repository: string,
     tag: string,
-  ): Promise<ReleaseRecord | undefined> {
+  ): Promise<ReleaseRecord[]> {
     const { owner, repo } = parseRepository(repository)
     try {
-      const response = await octokit.rest.repos.getReleaseByTag({
-        owner,
-        repo,
-        tag,
-      })
-      return mapRelease(response.data)
-    } catch (error: unknown) {
-      const status = extractStatus(error)
-      if (status === 404) {
-        return undefined
+      const releases: ReleaseRecord[] = []
+      let page = 1
+
+      while (true) {
+        const response = await octokit.rest.repos.listReleases({
+          owner,
+          repo,
+          per_page: 100,
+          page,
+        })
+
+        releases.push(
+          ...response.data
+            .filter((release) => release.tag_name === tag)
+            .map(mapRelease),
+        )
+
+        if (response.data.length < 100) {
+          return releases
+        }
+
+        page += 1
       }
+    } catch (error: unknown) {
       throw toGitHubApiError(error)
     }
   }
@@ -246,7 +256,7 @@ export function createGitHubReleaseApi(token: string): GitHubReleaseApi {
   }
 
   return {
-    getReleaseByTag,
+    findReleasesByTag,
     createDraftRelease,
     updateRelease,
     getReleaseById,

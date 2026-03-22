@@ -4,7 +4,7 @@ import type { GitHubReleaseApi } from '../../src/adapters/github/release-api'
 
 function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
   return {
-    getReleaseByTag: vi.fn(),
+    findReleasesByTag: vi.fn(),
     createDraftRelease: vi.fn(),
     updateRelease: vi.fn(),
     getReleaseById: vi.fn(),
@@ -19,15 +19,17 @@ function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
 describe('prepareRelease', () => {
   it('updates existing release and reports created false', async () => {
     const api = buildApi({
-      getReleaseByTag: vi.fn().mockResolvedValue({
-        id: 7,
-        tagName: 'v1',
-        uploadUrl: 'u',
-        htmlUrl: 'h',
-        draft: true,
-        prerelease: false,
-        assets: [],
-      }),
+      findReleasesByTag: vi.fn().mockResolvedValue([
+        {
+          id: 7,
+          tagName: 'v1',
+          uploadUrl: 'u',
+          htmlUrl: 'h',
+          draft: true,
+          prerelease: false,
+          assets: [],
+        },
+      ]),
       resolveMetadata: vi.fn().mockResolvedValue({ name: 'R' }),
       updateRelease: vi.fn().mockResolvedValue({
         id: 7,
@@ -68,15 +70,17 @@ describe('prepareRelease', () => {
 
   it('fails when prepare targets an already published release', async () => {
     const api = buildApi({
-      getReleaseByTag: vi.fn().mockResolvedValue({
-        id: 7,
-        tagName: 'v1',
-        uploadUrl: 'u',
-        htmlUrl: 'h',
-        draft: false,
-        prerelease: false,
-        assets: [],
-      }),
+      findReleasesByTag: vi.fn().mockResolvedValue([
+        {
+          id: 7,
+          tagName: 'v1',
+          uploadUrl: 'u',
+          htmlUrl: 'h',
+          draft: false,
+          prerelease: false,
+          assets: [],
+        },
+      ]),
       resolveMetadata: vi.fn().mockResolvedValue({}),
     })
 
@@ -107,7 +111,7 @@ describe('prepareRelease', () => {
 
   it('fails when release is missing and create is false', async () => {
     const api = buildApi({
-      getReleaseByTag: vi.fn().mockResolvedValue(undefined),
+      findReleasesByTag: vi.fn().mockResolvedValue([]),
       resolveMetadata: vi.fn().mockResolvedValue({}),
     })
 
@@ -134,5 +138,55 @@ describe('prepareRelease', () => {
         api,
       ),
     ).rejects.toThrow("No release exists for tag 'v1'")
+  })
+
+  it('fails when multiple releases already exist for the same tag', async () => {
+    const api = buildApi({
+      findReleasesByTag: vi.fn().mockResolvedValue([
+        {
+          id: 7,
+          tagName: 'v1',
+          uploadUrl: 'u1',
+          htmlUrl: 'h1',
+          draft: true,
+          prerelease: false,
+          assets: [],
+        },
+        {
+          id: 8,
+          tagName: 'v1',
+          uploadUrl: 'u2',
+          htmlUrl: 'h2',
+          draft: true,
+          prerelease: false,
+          assets: [],
+        },
+      ]),
+      resolveMetadata: vi.fn().mockResolvedValue({}),
+    })
+
+    await expect(
+      prepareRelease(
+        {
+          mode: 'prepare',
+          repository: 'o/r',
+          token: 't',
+          tag: 'v1',
+          create: true,
+          metadata: {
+            name: undefined,
+            body: undefined,
+            bodyPath: undefined,
+            generateNotes: false,
+            generateNotesProvided: false,
+            prerelease: false,
+            prereleaseProvided: false,
+            makeLatest: undefined,
+            makeLatestProvided: false,
+          },
+        },
+        api,
+      ),
+    ).rejects.toThrow("Multiple releases already exist for tag 'v1'")
   })
 })

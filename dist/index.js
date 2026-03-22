@@ -37206,21 +37206,28 @@ class GitHubApiError extends Error {
 exports.GitHubApiError = GitHubApiError;
 function createGitHubReleaseApi(token) {
     const octokit = github.getOctokit(token);
-    async function getReleaseByTag(repository, tag) {
+    async function findReleasesByTag(repository, tag) {
         const { owner, repo } = parseRepository(repository);
         try {
-            const response = await octokit.rest.repos.getReleaseByTag({
-                owner,
-                repo,
-                tag,
-            });
-            return (0, release_mapper_1.mapRelease)(response.data);
+            const releases = [];
+            let page = 1;
+            while (true) {
+                const response = await octokit.rest.repos.listReleases({
+                    owner,
+                    repo,
+                    per_page: 100,
+                    page,
+                });
+                releases.push(...response.data
+                    .filter((release) => release.tag_name === tag)
+                    .map(release_mapper_1.mapRelease));
+                if (response.data.length < 100) {
+                    return releases;
+                }
+                page += 1;
+            }
         }
         catch (error) {
-            const status = extractStatus(error);
-            if (status === 404) {
-                return undefined;
-            }
             throw toGitHubApiError(error);
         }
     }
@@ -37362,7 +37369,7 @@ function createGitHubReleaseApi(token) {
         };
     }
     return {
-        getReleaseByTag,
+        findReleasesByTag,
         createDraftRelease,
         updateRelease,
         getReleaseById,
@@ -37481,11 +37488,8 @@ const sleep_1 = __nccwpck_require__(4323);
 const retry_policy_1 = __nccwpck_require__(2285);
 async function prepareRelease(request, api = (0, release_api_1.createGitHubReleaseApi)(request.token)) {
     const metadata = await api.resolveMetadata(request.metadata);
-    const existing = await api.getReleaseByTag(request.repository, request.tag);
+    const existing = selectPrepareRelease(request.tag, await api.findReleasesByTag(request.repository, request.tag));
     if (existing) {
-        if (!existing.draft) {
-            throw new Error(`Release for tag '${request.tag}' already exists and is published. Prepare mode only manages draft releases.`);
-        }
         const updated = await api.updateRelease(request.repository, existing.id, metadata, existing.draft);
         return toActionResult(updated, false);
     }
@@ -37502,7 +37506,7 @@ async function prepareRelease(request, api = (0, release_api_1.createGitHubRelea
                 throw error;
             }
             if ((0, retry_policy_1.isConflictStatus)(error.status)) {
-                const converged = await api.getReleaseByTag(request.repository, request.tag);
+                const converged = selectPrepareRelease(request.tag, await api.findReleasesByTag(request.repository, request.tag));
                 if (converged) {
                     return toActionResult(converged, false);
                 }
@@ -37516,6 +37520,19 @@ async function prepareRelease(request, api = (0, release_api_1.createGitHubRelea
         }
     }
     throw new Error('Failed to prepare release after bounded retry.');
+}
+function selectPrepareRelease(tag, releases) {
+    if (releases.length === 0) {
+        return undefined;
+    }
+    if (releases.length > 1) {
+        throw new Error(`Multiple releases already exist for tag '${tag}'. Prepare mode requires exactly one draft release or no release.`);
+    }
+    const [release] = releases;
+    if (!release.draft) {
+        throw new Error(`Release for tag '${tag}' already exists and is published. Prepare mode only manages draft releases.`);
+    }
+    return release;
 }
 function toActionResult(release, created) {
     return {

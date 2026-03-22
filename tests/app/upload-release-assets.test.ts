@@ -10,7 +10,7 @@ import { resolveUploadFiles } from '../../src/adapters/fs/release-files'
 
 function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
   return {
-    getReleaseByTag: vi.fn(),
+    findReleasesByTag: vi.fn(),
     createDraftRelease: vi.fn(),
     updateRelease: vi.fn(),
     getReleaseById: vi.fn(),
