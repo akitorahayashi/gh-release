@@ -1,0 +1,261 @@
+# End-to-End Release Workflow
+#
+# Exercises both simple prepare/publish and parallel upload/publish flows
+# against temporary tags, verifies convergence, and always removes test resources.
+
+name: E2E Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  plan:
+    name: Plan Test Tags
+    runs-on: ubuntu-latest
+    outputs:
+      simple_tag: ${{ steps.tags.outputs.simple_tag }}
+      upload_tag: ${{ steps.tags.outputs.upload_tag }}
+
+    steps:
+      - id: tags
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          echo "simple_tag=e2e-mock-simple-${RUN_ID}-${RUN_ATTEMPT}" >> "${GITHUB_OUTPUT}"
+          echo "upload_tag=e2e-mock-upload-${RUN_ID}-${RUN_ATTEMPT}" >> "${GITHUB_OUTPUT}"
+
+  simple-prepare:
+    name: Prepare Simple Release
+    needs: plan
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.prepare.outputs.release_id }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create and Push Simple Test Tag
+        env:
+          TAG: ${{ needs.plan.outputs.simple_tag }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag --annotate "${TAG}" --message "E2E simple ${TAG}" "${GITHUB_SHA}"
+          git push origin "refs/tags/${TAG}"
+
+      - id: prepare
+        name: Prepare Simple Release
+        uses: ./
+        with:
+          mode: prepare
+          token: ${{ github.token }}
+          tag: ${{ needs.plan.outputs.simple_tag }}
+          create: true
+          generate_notes: true
+
+  simple-publish:
+    name: Publish Simple Release
+    needs: [plan, simple-prepare]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Publish Simple Release
+        uses: ./
+        with:
+          mode: publish
+          token: ${{ github.token }}
+          release_id: ${{ needs.simple-prepare.outputs.release_id }}
+          publish: true
+
+  upload-prepare:
+    name: Prepare Parallel Upload Release
+    needs: plan
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.prepare.outputs.release_id }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create and Push Upload Test Tag
+        env:
+          TAG: ${{ needs.plan.outputs.upload_tag }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag --annotate "${TAG}" --message "E2E upload ${TAG}" "${GITHUB_SHA}"
+          git push origin "refs/tags/${TAG}"
+
+      - id: prepare
+        name: Prepare Parallel Upload Release
+        uses: ./
+        with:
+          mode: prepare
+          token: ${{ github.token }}
+          tag: ${{ needs.plan.outputs.upload_tag }}
+          create: true
+          generate_notes: true
+
+  upload-assets:
+    name: Upload Parallel Assets
+    needs: [plan, upload-prepare]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - asset_name: e2e-darwin-aarch64
+          - asset_name: e2e-darwin-x86_64
+          - asset_name: e2e-linux-x86_64
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Create Mock Asset
+        env:
+          ASSET_NAME: ${{ matrix.asset_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp/e2e-release
+          printf '%s\n' "${ASSET_NAME}" > ".tmp/e2e-release/${ASSET_NAME}"
+
+      - name: Upload Mock Asset
+        uses: ./
+        with:
+          mode: upload
+          token: ${{ github.token }}
+          release_id: ${{ needs.upload-prepare.outputs.release_id }}
+          files: .tmp/e2e-release/${{ matrix.asset_name }}
+          overwrite: true
+
+  upload-publish:
+    name: Publish Parallel Upload Release
+    needs: [plan, upload-prepare, upload-assets]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Publish Parallel Upload Release
+        uses: ./
+        with:
+          mode: publish
+          token: ${{ github.token }}
+          release_id: ${{ needs.upload-prepare.outputs.release_id }}
+          publish: true
+
+  verify:
+    name: Verify Release Convergence
+    needs: [plan, simple-publish, upload-publish]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify Simple Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.plan.outputs.simple_tag }}
+        run: |
+          set -euo pipefail
+          releases_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate --slurp)"
+          matches="$(jq --arg tag "${TAG}" '[.[].[] | select(.tag_name == $tag)]' <<< "${releases_json}")"
+          count="$(jq 'length' <<< "${matches}")"
+          if [[ "${count}" -ne 1 ]]; then
+            echo "Expected exactly one release for ${TAG}, found ${count}." >&2
+            exit 1
+          fi
+          draft="$(jq -r '.[0].draft' <<< "${matches}")"
+          if [[ "${draft}" != "false" ]]; then
+            echo "Expected published release for ${TAG}, got draft=${draft}." >&2
+            exit 1
+          fi
+          asset_count="$(jq '.[0].assets | length' <<< "${matches}")"
+          if [[ "${asset_count}" -ne 0 ]]; then
+            echo "Expected no uploaded assets for ${TAG}, found ${asset_count}." >&2
+            exit 1
+          fi
+
+      - name: Verify Parallel Upload Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.plan.outputs.upload_tag }}
+        run: |
+          set -euo pipefail
+          releases_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate --slurp)"
+          matches="$(jq --arg tag "${TAG}" '[.[].[] | select(.tag_name == $tag)]' <<< "${releases_json}")"
+          count="$(jq 'length' <<< "${matches}")"
+          if [[ "${count}" -ne 1 ]]; then
+            echo "Expected exactly one release for ${TAG}, found ${count}." >&2
+            exit 1
+          fi
+          draft="$(jq -r '.[0].draft' <<< "${matches}")"
+          if [[ "${draft}" != "false" ]]; then
+            echo "Expected published release for ${TAG}, got draft=${draft}." >&2
+            exit 1
+          fi
+          asset_names="$(
+            jq -r '.[0].assets | map(.name) | sort | join(",")' <<< "${matches}"
+          )"
+          if [[ "${asset_names}" != "e2e-darwin-aarch64,e2e-darwin-x86_64,e2e-linux-x86_64" ]]; then
+            echo "Unexpected asset set for ${TAG}: ${asset_names}." >&2
+            exit 1
+          fi
+
+  cleanup:
+    name: Cleanup Test Releases
+    if: always()
+    needs:
+      - plan
+      - simple-prepare
+      - simple-publish
+      - upload-prepare
+      - upload-assets
+      - upload-publish
+      - verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete Test Releases and Tags
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SIMPLE_TAG: ${{ needs.plan.outputs.simple_tag }}
+          UPLOAD_TAG: ${{ needs.plan.outputs.upload_tag }}
+        run: |
+          set -euo pipefail
+
+          releases_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases" --paginate --slurp)"
+
+          delete_releases_for_tag() {
+            local tag="$1"
+            local release_ids
+            release_ids="$(
+              jq -r --arg tag "${tag}" '[.[].[] | select(.tag_name == $tag) | .id] | .[]?' <<< "${releases_json}"
+            )"
+            if [[ -z "${release_ids}" ]]; then
+              return
+            fi
+            while IFS= read -r release_id; do
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/releases/${release_id}"
+            done <<< "${release_ids}"
+          }
+
+          delete_releases_for_tag "${SIMPLE_TAG}"
+          delete_releases_for_tag "${UPLOAD_TAG}"
+
+          gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/${SIMPLE_TAG}" >/dev/null 2>&1 || true
+          gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/tags/${UPLOAD_TAG}" >/dev/null 2>&1 || true
