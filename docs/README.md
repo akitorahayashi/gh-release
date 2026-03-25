@@ -10,8 +10,8 @@ The usage document describes explicit release lifecycle ownership across workflo
 
 ## Architecture
 
-- [Architecture Boundary](architecture/boundary.md): runtime boundaries, dependency direction, lifecycle use cases, and failure invariants
+- [Architecture Boundary](architecture.md): runtime boundaries, dependency direction, lifecycle use cases, and failure invariants
 
 ## Configuration
 
-- [Action Inputs](configuration/inputs.md): action inputs, phase ownership rules, and output values
+- [Action Inputs](configuration.md): action inputs, phase ownership rules, and output values

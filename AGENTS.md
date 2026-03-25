@@ -18,6 +18,12 @@ just fix applies formatting and safe lint fixes.
 just check runs formatter, lint, and typecheck validation.
 just test runs repository tests.
 
+## Documentation
+
+- docs/usage.md: prepare, upload, publish workflow patterns
+- docs/architecture.md: runtime boundaries, lifecycle use cases
+- docs/configuration.md: action inputs, phase ownership rules
+
 ## Constraints
 
 dist/ is release-managed output and is not updated in normal development changes.
