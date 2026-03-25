@@ -35,7 +35,3 @@ The repository-owned verification and maintenance recipes are:
 
 The repository versions one action. Consumer-facing tags follow `vX.Y.Z`, and the moving major tag for workflows is `v1`.
 The release workflow accepts an `X.Y.Z` version input, validates it, regenerates `dist/`, commits the release distribution when needed, and then publishes the GitHub Release while moving the corresponding major tag.
-
-## Documentation
-
-`README.md` is the public front door. `docs/` owns task-oriented usage, durable architecture, and configuration reference surfaces.
