@@ -4,13 +4,6 @@ gh-release is a TypeScript GitHub Action that mutates GitHub Releases in explici
 
 The action separates release preparation, asset upload, and publication so workflows can run matrix builds in parallel without mixed release ownership.
 
-## Lifecycle Model
-
-1. Prepare one draft release for one tag.
-2. Build artifacts in parallel jobs.
-3. Upload assets from each build job to the prepared release.
-4. Publish the prepared release in one final job.
-
 ## Quick Start
 
 Prepare:
@@ -50,24 +43,8 @@ Publish:
     publish: true
 ```
 
-## Outputs
-
-- release_id
-- upload_url
-- html_url
-- tag_name
-- created
-- draft
-- uploaded_assets
-
-## Validation
-
-- just fix
-- just check
-- just test
-
 ## Documentation
 
 - [Usage](docs/usage.md)
-- [Architecture Boundary](docs/architecture/boundary.md)
-- [Action Inputs](docs/configuration/inputs.md)
+- [Architecture Boundary](docs/architecture.md)
+- [Action Inputs](docs/configuration.md)
