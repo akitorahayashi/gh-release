@@ -21,7 +21,7 @@ describe('prepareRelease', () => {
     const api = buildApi({
       findReleasesByTag: vi.fn().mockResolvedValue([
         {
-          id: 7,
+          releaseId: 7,
           tagName: 'v1',
           uploadUrl: 'u',
           htmlUrl: 'h',
@@ -32,7 +32,7 @@ describe('prepareRelease', () => {
       ]),
       resolveMetadata: vi.fn().mockResolvedValue({ name: 'R' }),
       updateRelease: vi.fn().mockResolvedValue({
-        id: 7,
+        releaseId: 7,
         tagName: 'v1',
         uploadUrl: 'u',
         htmlUrl: 'h',
@@ -47,7 +47,7 @@ describe('prepareRelease', () => {
         mode: 'prepare',
         repository: 'o/r',
         token: 't',
-        tag: 'v1',
+        tagName: 'v1',
         create: true,
         metadata: {
           name: 'R',
@@ -72,7 +72,7 @@ describe('prepareRelease', () => {
     const api = buildApi({
       findReleasesByTag: vi.fn().mockResolvedValue([
         {
-          id: 7,
+          releaseId: 7,
           tagName: 'v1',
           uploadUrl: 'u',
           htmlUrl: 'h',
@@ -90,7 +90,7 @@ describe('prepareRelease', () => {
           mode: 'prepare',
           repository: 'o/r',
           token: 't',
-          tag: 'v1',
+          tagName: 'v1',
           create: true,
           metadata: {
             name: undefined,
@@ -121,7 +121,7 @@ describe('prepareRelease', () => {
           mode: 'prepare',
           repository: 'o/r',
           token: 't',
-          tag: 'v1',
+          tagName: 'v1',
           create: false,
           metadata: {
             name: undefined,
@@ -144,7 +144,7 @@ describe('prepareRelease', () => {
     const api = buildApi({
       findReleasesByTag: vi.fn().mockResolvedValue([
         {
-          id: 7,
+          releaseId: 7,
           tagName: 'v1',
           uploadUrl: 'u1',
           htmlUrl: 'h1',
@@ -153,7 +153,7 @@ describe('prepareRelease', () => {
           assets: [],
         },
         {
-          id: 8,
+          releaseId: 8,
           tagName: 'v1',
           uploadUrl: 'u2',
           htmlUrl: 'h2',
@@ -171,7 +171,7 @@ describe('prepareRelease', () => {
           mode: 'prepare',
           repository: 'o/r',
           token: 't',
-          tag: 'v1',
+          tagName: 'v1',
           create: true,
           metadata: {
             name: undefined,

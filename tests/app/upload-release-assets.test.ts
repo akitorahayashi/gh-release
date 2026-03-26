@@ -52,7 +52,7 @@ describe('uploadReleaseAssets', () => {
       getReleaseById: vi
         .fn()
         .mockResolvedValueOnce({
-          id: 3,
+          releaseId: 3,
           tagName: 'v1',
           uploadUrl: 'u',
           htmlUrl: 'h',
@@ -61,7 +61,7 @@ describe('uploadReleaseAssets', () => {
           assets: [],
         })
         .mockResolvedValueOnce({
-          id: 3,
+          releaseId: 3,
           tagName: 'v1',
           uploadUrl: 'u',
           htmlUrl: 'h',
@@ -114,7 +114,7 @@ describe('uploadReleaseAssets', () => {
 
     const api = buildApi({
       getReleaseById: vi.fn().mockResolvedValue({
-        id: 3,
+        releaseId: 3,
         tagName: 'v1',
         uploadUrl: 'u',
         htmlUrl: 'h',

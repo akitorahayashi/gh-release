@@ -25,7 +25,7 @@ describe('release mapper', () => {
     })
 
     expect(record).toEqual({
-      id: 101,
+      releaseId: 101,
       tagName: 'v1.0.0',
       uploadUrl: 'https://uploads.example',
       htmlUrl: 'https://html.example',

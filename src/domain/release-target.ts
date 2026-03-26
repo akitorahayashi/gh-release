@@ -3,7 +3,7 @@ export interface ReleaseTarget {
 }
 
 export interface PrepareReleaseTarget extends ReleaseTarget {
-  tag: string
+  tagName: string
 }
 
 export function normalizeRepository(value: string): string {

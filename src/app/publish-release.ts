@@ -20,13 +20,13 @@ export async function publishRelease(
   const metadata = await api.resolveMetadata(request.metadata)
   const updated = await api.updateRelease(
     request.repository,
-    release.id,
+    release.releaseId,
     metadata,
     false,
   )
 
   return {
-    releaseId: updated.id,
+    releaseId: updated.releaseId,
     uploadUrl: updated.uploadUrl,
     htmlUrl: updated.htmlUrl,
     tagName: updated.tagName,

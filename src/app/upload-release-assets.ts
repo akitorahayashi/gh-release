@@ -41,7 +41,7 @@ export async function uploadReleaseAssets(
     )
 
     return {
-      releaseId: release.id,
+      releaseId: release.releaseId,
       uploadUrl: release.uploadUrl,
       htmlUrl: release.htmlUrl,
       tagName: release.tagName,
@@ -53,7 +53,7 @@ export async function uploadReleaseAssets(
 
   const existingAssets = await api.listReleaseAssets(
     request.repository,
-    release.id,
+    release.releaseId,
   )
   const existingByName = new Map(
     existingAssets.map((asset) => [asset.name, asset]),
@@ -82,11 +82,11 @@ export async function uploadReleaseAssets(
 
   const refreshedRelease = await api.getReleaseById(
     request.repository,
-    release.id,
+    release.releaseId,
   )
 
   return {
-    releaseId: refreshedRelease.id,
+    releaseId: refreshedRelease.releaseId,
     uploadUrl: refreshedRelease.uploadUrl,
     htmlUrl: refreshedRelease.htmlUrl,
     tagName: refreshedRelease.tagName,
