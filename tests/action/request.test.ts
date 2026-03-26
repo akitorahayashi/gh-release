@@ -69,7 +69,7 @@ describe('resolveActionRequest', () => {
       mode: 'prepare',
       repository: 'octo/repo',
       token: 'tok',
-      tag: 'v1.2.3',
+      tagName: 'v1.2.3',
       create: true,
       metadata: {
         name: 'Release v1.2.3',
@@ -105,7 +105,7 @@ describe('resolveActionRequest', () => {
       mode: 'prepare',
       repository: 'acme/widget',
       token: 'tok',
-      tag: 'v1',
+      tagName: 'v1',
       create: true,
       metadata: {
         name: undefined,

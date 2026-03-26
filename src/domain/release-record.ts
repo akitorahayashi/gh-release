@@ -7,7 +7,7 @@ export interface ReleaseAssetRecord {
 }
 
 export interface ReleaseRecord {
-  id: number
+  releaseId: number
   tagName: string
   uploadUrl: string
   htmlUrl: string

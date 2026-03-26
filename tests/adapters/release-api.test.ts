@@ -72,7 +72,7 @@ describe('createGitHubReleaseApi', () => {
     await expect(api.findReleasesByTag('octo/repo', 'v1.2.3')).resolves.toEqual(
       [
         {
-          id: 10,
+          releaseId: 10,
           tagName: 'v1.2.3',
           uploadUrl: 'https://uploads.example.test/release/10{?name,label}',
           htmlUrl: 'https://example.test/release/10',

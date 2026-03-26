@@ -4,13 +4,15 @@ import {
   type ReleaseMetadataInput,
   validateBodyInputs,
 } from '../domain/release-metadata'
-import { parseFilePatterns } from '../domain/release-asset-plan'
+import { parseFilePatterns, type UploadAssetPlan } from '../domain/release-asset-plan'
 import { parseReleaseMode, type ReleaseMode } from '../domain/release-mode'
 import { assertMetadataOwnership } from '../domain/release-write-policy'
 import {
   normalizeRepository,
   normalizeTag,
   parseReleaseId,
+  type PrepareReleaseTarget,
+  type ReleaseTarget,
 } from '../domain/release-target'
 import {
   parseOptionalBooleanInput,
@@ -25,23 +27,17 @@ interface BaseRequest {
   token: string
 }
 
-export interface PrepareActionRequest extends BaseRequest {
+export interface PrepareActionRequest extends Omit<BaseRequest, 'repository'>, PrepareReleaseTarget {
   mode: 'prepare'
-  tag: string
   create: boolean
   metadata: ReleaseMetadataInput
 }
 
-export interface UploadActionRequest extends BaseRequest {
+export interface UploadActionRequest extends Omit<BaseRequest, 'repository'>, ReleaseTarget, UploadAssetPlan {
   mode: 'upload'
-  releaseId: number
-  patterns: string[]
-  overwrite: boolean
-  failOnUnmatchedFiles: boolean
-  workingDirectory: string
 }
 
-export interface PublishActionRequest extends BaseRequest {
+export interface PublishActionRequest extends Omit<BaseRequest, 'repository'>, ReleaseTarget {
   mode: 'publish'
   releaseId: number
   publish: boolean
@@ -70,7 +66,7 @@ export function resolveActionRequest(): ActionRequest {
         mode,
         repository,
         token,
-        tag: normalizeTag(readRequiredInput('tag')),
+        tagName: normalizeTag(readRequiredInput('tag')),
         create: readBooleanInput('create', false),
         metadata,
       }
