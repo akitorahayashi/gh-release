@@ -118,32 +118,3 @@ jobs:
           release_id: ${{ steps.prepare-release.outputs.release_id }}
           publish: true
 
-      - name: Delete Existing Major Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          MAJOR_TAG: ${{ needs.validate-release.outputs.major_tag }}
-        run: |
-          set -euo pipefail
-
-          if gh release view "${MAJOR_TAG}" >/dev/null 2>&1; then
-            gh release delete "${MAJOR_TAG}" --yes
-          fi
-
-      - id: prepare-major-release
-        name: Prepare Major Release
-        uses: ./
-        with:
-          mode: prepare
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ needs.validate-release.outputs.major_tag }}
-          create: true
-          generate_notes: true
-          make_latest: false
-
-      - name: Publish Major Release
-        uses: ./
-        with:
-          mode: publish
-          token: ${{ secrets.GITHUB_TOKEN }}
-          release_id: ${{ steps.prepare-major-release.outputs.release_id }}
-          publish: true
