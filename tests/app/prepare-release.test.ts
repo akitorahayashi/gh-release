@@ -1,6 +1,13 @@
 import { describe, expect, it, vi } from 'vitest'
 import { prepareRelease } from '../../src/app/prepare-release'
-import type { GitHubReleaseApi } from '../../src/adapters/github/release-api'
+import {
+  GitHubApiError,
+  type GitHubReleaseApi,
+} from '../../src/adapters/github/release-api'
+
+vi.mock('../../src/adapters/time/sleep', () => ({
+  sleep: vi.fn().mockResolvedValue(undefined),
+}))
 
 function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
   return {
@@ -138,6 +145,143 @@ describe('prepareRelease', () => {
         api,
       ),
     ).rejects.toThrow("No release exists for tag 'v1'")
+  })
+
+  it('retries up to the maximum bounded attempts on retryable statuses and succeeds', async () => {
+    const createDraftRelease = vi
+      .fn()
+      .mockRejectedValueOnce(new GitHubApiError('Internal Server Error', 500))
+      .mockRejectedValueOnce(new GitHubApiError('Bad Gateway', 502))
+      .mockResolvedValueOnce({
+        id: 9,
+        tagName: 'v1',
+        uploadUrl: 'u',
+        htmlUrl: 'h',
+        draft: true,
+        prerelease: false,
+        assets: [],
+      })
+
+    const api = buildApi({
+      findReleasesByTag: vi.fn().mockResolvedValue([]),
+      resolveMetadata: vi.fn().mockResolvedValue({ name: 'R' }),
+      createDraftRelease,
+    })
+
+    const result = await prepareRelease(
+      {
+        mode: 'prepare',
+        repository: 'o/r',
+        token: 't',
+        tag: 'v1',
+        create: true,
+        metadata: {
+          name: 'R',
+          body: undefined,
+          bodyPath: undefined,
+          generateNotes: false,
+          generateNotesProvided: true,
+          prerelease: false,
+          prereleaseProvided: true,
+          makeLatest: undefined,
+          makeLatestProvided: false,
+        },
+      },
+      api,
+    )
+
+    expect(createDraftRelease).toHaveBeenCalledTimes(3)
+    expect(result.created).toBe(true)
+    expect(result.releaseId).toBe(9)
+  })
+
+  it('fails accurately when all bounded retries are exhausted', async () => {
+    const createDraftRelease = vi
+      .fn()
+      .mockRejectedValue(new GitHubApiError('Internal Server Error', 500))
+
+    const api = buildApi({
+      findReleasesByTag: vi.fn().mockResolvedValue([]),
+      resolveMetadata: vi.fn().mockResolvedValue({ name: 'R' }),
+      createDraftRelease,
+    })
+
+    await expect(
+      prepareRelease(
+        {
+          mode: 'prepare',
+          repository: 'o/r',
+          token: 't',
+          tag: 'v1',
+          create: true,
+          metadata: {
+            name: 'R',
+            body: undefined,
+            bodyPath: undefined,
+            generateNotes: false,
+            generateNotesProvided: true,
+            prerelease: false,
+            prereleaseProvided: true,
+            makeLatest: undefined,
+            makeLatestProvided: false,
+          },
+        },
+        api,
+      ),
+    ).rejects.toThrow('Internal Server Error')
+
+    expect(createDraftRelease).toHaveBeenCalledTimes(5)
+  })
+
+  it('handles 409 conflicts by returning the converged state', async () => {
+    const createDraftRelease = vi
+      .fn()
+      .mockRejectedValue(new GitHubApiError('Conflict', 409))
+
+    const api = buildApi({
+      findReleasesByTag: vi
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          {
+            id: 10,
+            tagName: 'v1',
+            uploadUrl: 'u',
+            htmlUrl: 'h',
+            draft: true,
+            prerelease: false,
+            assets: [],
+          },
+        ]),
+      resolveMetadata: vi.fn().mockResolvedValue({ name: 'R' }),
+      createDraftRelease,
+    })
+
+    const result = await prepareRelease(
+      {
+        mode: 'prepare',
+        repository: 'o/r',
+        token: 't',
+        tag: 'v1',
+        create: true,
+        metadata: {
+          name: 'R',
+          body: undefined,
+          bodyPath: undefined,
+          generateNotes: false,
+          generateNotesProvided: true,
+          prerelease: false,
+          prereleaseProvided: true,
+          makeLatest: undefined,
+          makeLatestProvided: false,
+        },
+      },
+      api,
+    )
+
+    expect(createDraftRelease).toHaveBeenCalledTimes(1)
+    expect(result.created).toBe(false)
+    expect(result.releaseId).toBe(10)
   })
 
   it('fails when multiple releases already exist for the same tag', async () => {
