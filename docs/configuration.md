@@ -45,4 +45,4 @@ The action emits:
 ## Mode Safety
 
 Mode boundaries are strict: upload never creates or publishes releases, and publish never uploads assets.
-When `generate_notes` and `prerelease` are omitted, they remain unset at the action boundary and resolve to false behavior only in prepare or publish mode.
+When `generate_notes` and `prerelease` are omitted, they resolve directly to false at the action boundary.
