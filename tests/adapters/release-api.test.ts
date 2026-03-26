@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createGitHubReleaseApi, GitHubApiError } from '../../src/adapters/github/release-api'
+import {
+  createGitHubReleaseApi,
+  GitHubApiError,
+} from '../../src/adapters/github/release-api'
 import * as github from '@actions/github'
 import { readFile } from 'node:fs/promises'
 
