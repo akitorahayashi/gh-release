@@ -2,6 +2,10 @@ export interface ReleaseTarget {
   repository: string
 }
 
+export interface ExistingReleaseTarget extends ReleaseTarget {
+  releaseId: number
+}
+
 export interface PrepareReleaseTarget extends ReleaseTarget {
   tagName: string
 }
