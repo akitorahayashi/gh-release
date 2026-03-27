@@ -14,8 +14,8 @@ import {
   normalizeRepository,
   normalizeTag,
   parseReleaseId,
+  type ExistingReleaseTarget,
   type PrepareReleaseTarget,
-  type ReleaseTarget,
 } from '../domain/release-target'
 import {
   parseOptionalBooleanInput,
@@ -40,16 +40,15 @@ export interface PrepareActionRequest
 
 export interface UploadActionRequest
   extends Omit<BaseRequest, 'repository'>,
-    ReleaseTarget,
+    ExistingReleaseTarget,
     UploadAssetPlan {
   mode: 'upload'
 }
 
 export interface PublishActionRequest
   extends Omit<BaseRequest, 'repository'>,
-    ReleaseTarget {
+    ExistingReleaseTarget {
   mode: 'publish'
-  releaseId: number
   publish: boolean
   metadata: ReleaseMetadataInput
 }
