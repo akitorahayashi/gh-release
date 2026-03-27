@@ -4,7 +4,10 @@ import {
   type ReleaseMetadataInput,
   validateBodyInputs,
 } from '../domain/release-metadata'
-import { parseFilePatterns, type UploadAssetPlan } from '../domain/release-asset-plan'
+import {
+  parseFilePatterns,
+  type UploadAssetPlan,
+} from '../domain/release-asset-plan'
 import { parseReleaseMode, type ReleaseMode } from '../domain/release-mode'
 import { assertMetadataOwnership } from '../domain/release-write-policy'
 import {
@@ -27,17 +30,24 @@ interface BaseRequest {
   token: string
 }
 
-export interface PrepareActionRequest extends Omit<BaseRequest, 'repository'>, PrepareReleaseTarget {
+export interface PrepareActionRequest
+  extends Omit<BaseRequest, 'repository'>,
+    PrepareReleaseTarget {
   mode: 'prepare'
   create: boolean
   metadata: ReleaseMetadataInput
 }
 
-export interface UploadActionRequest extends Omit<BaseRequest, 'repository'>, ReleaseTarget, UploadAssetPlan {
+export interface UploadActionRequest
+  extends Omit<BaseRequest, 'repository'>,
+    ReleaseTarget,
+    UploadAssetPlan {
   mode: 'upload'
 }
 
-export interface PublishActionRequest extends Omit<BaseRequest, 'repository'>, ReleaseTarget {
+export interface PublishActionRequest
+  extends Omit<BaseRequest, 'repository'>,
+    ReleaseTarget {
   mode: 'publish'
   releaseId: number
   publish: boolean
