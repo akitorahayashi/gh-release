@@ -26,6 +26,8 @@ on:
 
           - cov
 
+          - typescripter
+
       wait_minutes:
         description: 'Minutes to wait between layers (Jules async processing time)'
         type: number
@@ -61,7 +63,7 @@ jobs:
   bootstrap:
     
     if: >-
-      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') &&
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') &&
       
       true
       
@@ -98,8 +100,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Sync worker branch
@@ -196,8 +198,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
       - name: Run observer
         id: run
@@ -273,8 +275,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
       - name: Run dispatcher
         id: run
@@ -317,7 +319,9 @@ jobs:
     needs: ["run-dispatcher"]
     if: |
       !cancelled() &&
+
       needs.run-dispatcher.result == 'success'
+
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -339,12 +343,13 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Publish implementer issues (requirements)
         id: publish
+
         run: |
           set -euo pipefail
           jlo workflow publish implementer-issues requirements
@@ -428,8 +433,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Resolve planner targets
@@ -496,8 +501,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Run planner (${{ matrix.target }})
@@ -537,8 +542,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Report Run planner status
@@ -571,7 +576,9 @@ jobs:
     needs: ["report-planner-status"]
     if: |
       !cancelled() &&
+
       needs.report-planner-status.result == 'success'
+
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -593,12 +600,13 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Publish implementer issues (plans)
         id: publish
+
         run: |
           set -euo pipefail
           jlo workflow publish implementer-issues plans
@@ -684,8 +692,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Resolve implementer targets
@@ -752,8 +760,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Run implementer (${{ matrix.target }})
@@ -793,8 +801,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Report Run implementer status
@@ -858,8 +866,8 @@ jobs:
       - name: Install jlo
         uses: asterismhq/setup-jlo@v1
         with:
-          token: ${{ secrets.JLO_RELEASE_PAT }}
-          version: '24.2.0'
+          token: ${{ secrets.JLO_INSTALL_PAT }}
+          version: '24.3.0'
           submodule_token: ${{ secrets.JLO_SUBMODULE_PAT }}
 
       - name: Cleanup mock artifacts for this run

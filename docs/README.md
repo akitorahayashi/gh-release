@@ -4,7 +4,7 @@ This directory is the central documentation index for gh-release.
 
 ## Usage
 
-- [Usage](usage.md): prepare, upload, publish workflow patterns and verification commands
+- [Usage](usage.md): prepare, upload, publish workflow patterns
 
 The usage document describes explicit release lifecycle ownership across workflow jobs.
 

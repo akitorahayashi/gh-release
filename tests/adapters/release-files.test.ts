@@ -1,30 +1,36 @@
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   readReleaseBodyFromPath,
   resolveUploadFiles,
 } from '../../src/adapters/fs/release-files'
 
-const temporaryDirectories: string[] = []
+interface LocalTestContext {
+  temporaryDirectories: string[]
+}
 
 describe('release-files adapter', () => {
-  afterEach(async () => {
+  beforeEach<LocalTestContext>((context) => {
+    context.temporaryDirectories = []
+  })
+
+  afterEach<LocalTestContext>(async (context) => {
     const { rm } = await import('node:fs/promises')
     await Promise.all(
-      temporaryDirectories.map((directory) =>
+      context.temporaryDirectories.map((directory) =>
         rm(directory, { recursive: true, force: true }),
       ),
     )
-    temporaryDirectories.splice(0, temporaryDirectories.length)
+    context.temporaryDirectories.splice(0, context.temporaryDirectories.length)
   })
 
-  it('resolves files from glob patterns relative to working directory', async () => {
+  it<LocalTestContext>('resolves files from glob patterns relative to working directory', async (context) => {
     await mkdir(join(process.cwd(), '.tmp'), { recursive: true })
     const directory = await mkdtemp(
       join(process.cwd(), '.tmp/gh-release-test-'),
     )
-    temporaryDirectories.push(directory)
+    context.temporaryDirectories.push(directory)
 
     const a = join(directory, 'a.txt')
     const b = join(directory, 'b.txt')
@@ -35,12 +41,12 @@ describe('release-files adapter', () => {
     expect(files.map((file) => file.name)).toEqual(['a.txt', 'b.txt'])
   })
 
-  it('reads release body from file path', async () => {
+  it<LocalTestContext>('reads release body from file path', async (context) => {
     await mkdir(join(process.cwd(), '.tmp'), { recursive: true })
     const directory = await mkdtemp(
       join(process.cwd(), '.tmp/gh-release-test-'),
     )
-    temporaryDirectories.push(directory)
+    context.temporaryDirectories.push(directory)
 
     const bodyPath = join(directory, 'notes.md')
     await writeFile(bodyPath, '# Notes')

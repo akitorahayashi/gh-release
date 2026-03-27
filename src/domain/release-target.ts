@@ -2,8 +2,12 @@ export interface ReleaseTarget {
   repository: string
 }
 
+export interface ExistingReleaseTarget extends ReleaseTarget {
+  releaseId: number
+}
+
 export interface PrepareReleaseTarget extends ReleaseTarget {
-  tag: string
+  tagName: string
 }
 
 export function normalizeRepository(value: string): string {

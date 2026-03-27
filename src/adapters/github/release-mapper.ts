@@ -35,7 +35,7 @@ export function mapReleaseAsset(
 
 export function mapRelease(record: GitHubReleaseLike): ReleaseRecord {
   return {
-    id: record.id,
+    releaseId: record.id,
     tagName: record.tag_name,
     uploadUrl: record.upload_url,
     htmlUrl: record.html_url,

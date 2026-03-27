@@ -212,7 +212,7 @@ export function createGitHubReleaseApi(token: string): GitHubReleaseApi {
       const uploadResponse = await octokit.rest.repos.uploadReleaseAsset({
         owner,
         repo,
-        release_id: release.id,
+        release_id: release.releaseId,
         name: fileName,
         // Octokit runtime accepts Buffer, but current type narrows data to string.
         data: assetData as unknown as string,

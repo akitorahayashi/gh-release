@@ -1,5 +1,4 @@
 export interface UploadAssetPlan {
-  releaseId: number
   patterns: string[]
   overwrite: boolean
   failOnUnmatchedFiles: boolean

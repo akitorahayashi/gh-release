@@ -48,7 +48,7 @@ describe('publishRelease', () => {
   it('publishes draft release and returns normalized output', async () => {
     const api = buildApi({
       getReleaseById: vi.fn().mockResolvedValue({
-        id: 9,
+        releaseId: 9,
         tagName: 'v1',
         uploadUrl: 'u',
         htmlUrl: 'h',
@@ -58,7 +58,7 @@ describe('publishRelease', () => {
       }),
       resolveMetadata: vi.fn().mockResolvedValue({ name: 'R' }),
       updateRelease: vi.fn().mockResolvedValue({
-        id: 9,
+        releaseId: 9,
         tagName: 'v1',
         uploadUrl: 'u',
         htmlUrl: 'h',

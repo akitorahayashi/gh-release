@@ -21,13 +21,13 @@ export async function prepareRelease(
   const metadata = await api.resolveMetadata(request.metadata)
 
   const existing = selectPrepareRelease(
-    request.tag,
-    await api.findReleasesByTag(request.repository, request.tag),
+    request.tagName,
+    await api.findReleasesByTag(request.repository, request.tagName),
   )
   if (existing) {
     const updated = await api.updateRelease(
       request.repository,
-      existing.id,
+      existing.releaseId,
       metadata,
       existing.draft,
     )
@@ -36,7 +36,7 @@ export async function prepareRelease(
 
   if (!request.create) {
     throw new Error(
-      `No release exists for tag '${request.tag}'. Set 'create' to true in prepare mode to create a draft release.`,
+      `No release exists for tag '${request.tagName}'. Set 'create' to true in prepare mode to create a draft release.`,
     )
   }
 
@@ -48,7 +48,7 @@ export async function prepareRelease(
     try {
       const created = await api.createDraftRelease(
         request.repository,
-        request.tag,
+        request.tagName,
         metadata,
       )
       return toActionResult(created, true)
@@ -59,8 +59,8 @@ export async function prepareRelease(
 
       if (isConflictStatus(error.status)) {
         const converged = selectPrepareRelease(
-          request.tag,
-          await api.findReleasesByTag(request.repository, request.tag),
+          request.tagName,
+          await api.findReleasesByTag(request.repository, request.tagName),
         )
         if (converged) {
           return toActionResult(converged, false)
@@ -113,7 +113,7 @@ function toActionResult(
   created: boolean,
 ): ActionResult {
   return {
-    releaseId: release.id,
+    releaseId: release.releaseId,
     uploadUrl: release.uploadUrl,
     htmlUrl: release.htmlUrl,
     tagName: release.tagName,
