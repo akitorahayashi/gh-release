@@ -37061,7 +37061,7 @@ function resolveActionRequest() {
                 mode,
                 repository,
                 token,
-                tag: (0, release_target_1.normalizeTag)((0, inputs_1.readRequiredInput)('tag')),
+                tagName: (0, release_target_1.normalizeTag)((0, inputs_1.readRequiredInput)('tag')),
                 create: (0, inputs_1.readBooleanInput)('create', false),
                 metadata,
             };
@@ -37329,7 +37329,7 @@ function createGitHubReleaseApi(token) {
             const uploadResponse = await octokit.rest.repos.uploadReleaseAsset({
                 owner,
                 repo,
-                release_id: release.id,
+                release_id: release.releaseId,
                 name: fileName,
                 // Octokit runtime accepts Buffer, but current type narrows data to string.
                 data: assetData,
@@ -37425,7 +37425,7 @@ function mapReleaseAsset(asset) {
 }
 function mapRelease(record) {
     return {
-        id: record.id,
+        releaseId: record.id,
         tagName: record.tag_name,
         uploadUrl: record.upload_url,
         htmlUrl: record.html_url,
@@ -37488,17 +37488,17 @@ const sleep_1 = __nccwpck_require__(4323);
 const retry_policy_1 = __nccwpck_require__(2285);
 async function prepareRelease(request, api = (0, release_api_1.createGitHubReleaseApi)(request.token)) {
     const metadata = await api.resolveMetadata(request.metadata);
-    const existing = selectPrepareRelease(request.tag, await api.findReleasesByTag(request.repository, request.tag));
+    const existing = selectPrepareRelease(request.tagName, await api.findReleasesByTag(request.repository, request.tagName));
     if (existing) {
-        const updated = await api.updateRelease(request.repository, existing.id, metadata, existing.draft);
+        const updated = await api.updateRelease(request.repository, existing.releaseId, metadata, existing.draft);
         return toActionResult(updated, false);
     }
     if (!request.create) {
-        throw new Error(`No release exists for tag '${request.tag}'. Set 'create' to true in prepare mode to create a draft release.`);
+        throw new Error(`No release exists for tag '${request.tagName}'. Set 'create' to true in prepare mode to create a draft release.`);
     }
     for (let attempt = 1; attempt <= retry_policy_1.releaseMutationRetryPolicy.maxAttempts; attempt += 1) {
         try {
-            const created = await api.createDraftRelease(request.repository, request.tag, metadata);
+            const created = await api.createDraftRelease(request.repository, request.tagName, metadata);
             return toActionResult(created, true);
         }
         catch (error) {
@@ -37506,7 +37506,7 @@ async function prepareRelease(request, api = (0, release_api_1.createGitHubRelea
                 throw error;
             }
             if ((0, retry_policy_1.isConflictStatus)(error.status)) {
-                const converged = selectPrepareRelease(request.tag, await api.findReleasesByTag(request.repository, request.tag));
+                const converged = selectPrepareRelease(request.tagName, await api.findReleasesByTag(request.repository, request.tagName));
                 if (converged) {
                     return toActionResult(converged, false);
                 }
@@ -37536,7 +37536,7 @@ function selectPrepareRelease(tag, releases) {
 }
 function toActionResult(release, created) {
     return {
-        releaseId: release.id,
+        releaseId: release.releaseId,
         uploadUrl: release.uploadUrl,
         htmlUrl: release.htmlUrl,
         tagName: release.tagName,
@@ -37563,9 +37563,9 @@ async function publishRelease(request, api = (0, release_api_1.createGitHubRelea
     }
     const release = await api.getReleaseById(request.repository, request.releaseId);
     const metadata = await api.resolveMetadata(request.metadata);
-    const updated = await api.updateRelease(request.repository, release.id, metadata, false);
+    const updated = await api.updateRelease(request.repository, release.releaseId, metadata, false);
     return {
-        releaseId: updated.id,
+        releaseId: updated.releaseId,
         uploadUrl: updated.uploadUrl,
         htmlUrl: updated.htmlUrl,
         tagName: updated.tagName,
@@ -37599,7 +37599,7 @@ async function uploadReleaseAssets(request, api = (0, release_api_1.createGitHub
         }
         console.log(`No files matched upload patterns in working directory '${request.workingDirectory}'. Skipping asset upload because 'fail_on_unmatched_files' is false.`);
         return {
-            releaseId: release.id,
+            releaseId: release.releaseId,
             uploadUrl: release.uploadUrl,
             htmlUrl: release.htmlUrl,
             tagName: release.tagName,
@@ -37608,7 +37608,7 @@ async function uploadReleaseAssets(request, api = (0, release_api_1.createGitHub
             uploadedAssets: [],
         };
     }
-    const existingAssets = await api.listReleaseAssets(request.repository, release.id);
+    const existingAssets = await api.listReleaseAssets(request.repository, release.releaseId);
     const existingByName = new Map(existingAssets.map((asset) => [asset.name, asset]));
     const uploadPromises = files.map(async (file) => {
         const existing = existingByName.get(file.name);
@@ -37621,9 +37621,9 @@ async function uploadReleaseAssets(request, api = (0, release_api_1.createGitHub
         return api.uploadReleaseAsset(request.repository, release, file.name, file.path);
     });
     const uploadedAssets = await Promise.all(uploadPromises);
-    const refreshedRelease = await api.getReleaseById(request.repository, release.id);
+    const refreshedRelease = await api.getReleaseById(request.repository, release.releaseId);
     return {
-        releaseId: refreshedRelease.id,
+        releaseId: refreshedRelease.releaseId,
         uploadUrl: refreshedRelease.uploadUrl,
         htmlUrl: refreshedRelease.htmlUrl,
         tagName: refreshedRelease.tagName,
