@@ -168,24 +168,21 @@ describe('createGitHubReleaseApi', () => {
       createRelease.mockRejectedValue(new Error('API request failed'))
 
       const api = createGitHubReleaseApi('token')
-      await expect(
-        api.createDraftRelease('octo/repo', 'v1.0.0', {
+      let caughtError: unknown
+      try {
+        await api.createDraftRelease('octo/repo', 'v1.0.0', {
           name: 'Release 1.0.0',
           body: 'Release notes',
           generateNotes: true,
           prerelease: false,
           makeLatest: 'true',
-        }),
-      ).rejects.toThrow(GitHubApiError)
-      await expect(
-        api.createDraftRelease('octo/repo', 'v1.0.0', {
-          name: 'Release 1.0.0',
-          body: 'Release notes',
-          generateNotes: true,
-          prerelease: false,
-          makeLatest: 'true',
-        }),
-      ).rejects.toThrow('API request failed')
+        })
+      } catch (e) {
+        caughtError = e
+      }
+
+      expect(caughtError).toBeInstanceOf(GitHubApiError)
+      expect((caughtError as GitHubApiError).message).toBe('API request failed')
     })
 
     it('throws GitHubApiError with status if the API request fails with status', async () => {
