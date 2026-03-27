@@ -26,16 +26,18 @@ describe('uploadReleaseAssets', () => {
   it('returns default metadata gracefully when failOnUnmatchedFiles is false and files input matches nothing', async () => {
     vi.mocked(resolveUploadFiles).mockResolvedValue([])
 
+    const mockRelease = {
+      releaseId: 3,
+      tagName: 'v1',
+      uploadUrl: 'u',
+      htmlUrl: 'h',
+      draft: true,
+      prerelease: false,
+      assets: [],
+    }
+
     const api = buildApi({
-      getReleaseById: vi.fn().mockResolvedValue({
-        id: 3,
-        tagName: 'v1',
-        uploadUrl: 'u',
-        htmlUrl: 'h',
-        draft: true,
-        prerelease: false,
-        assets: [],
-      }),
+      getReleaseById: vi.fn().mockResolvedValue(mockRelease),
     })
 
     const result = await uploadReleaseAssets(
@@ -43,7 +45,7 @@ describe('uploadReleaseAssets', () => {
         mode: 'upload',
         repository: 'o/r',
         token: 't',
-        releaseId: 3,
+        releaseId: mockRelease.releaseId,
         patterns: ['dist/*.tgz'],
         overwrite: false,
         failOnUnmatchedFiles: false,
@@ -53,12 +55,12 @@ describe('uploadReleaseAssets', () => {
     )
 
     expect(result).toEqual({
-      releaseId: 3,
-      uploadUrl: 'u',
-      htmlUrl: 'h',
-      tagName: 'v1',
+      releaseId: mockRelease.releaseId,
+      uploadUrl: mockRelease.uploadUrl,
+      htmlUrl: mockRelease.htmlUrl,
+      tagName: mockRelease.tagName,
       created: false,
-      draft: true,
+      draft: mockRelease.draft,
       uploadedAssets: [],
     })
   })
@@ -88,27 +90,21 @@ describe('uploadReleaseAssets', () => {
       { path: '/tmp/a.tgz', name: 'a.tgz' },
     ])
 
+    const mockRelease = {
+      releaseId: 3,
+      tagName: 'v1',
+      uploadUrl: 'u',
+      htmlUrl: 'h',
+      draft: true,
+      prerelease: false,
+      assets: [],
+    }
+
     const api = buildApi({
       getReleaseById: vi
         .fn()
-        .mockResolvedValueOnce({
-          releaseId: 3,
-          tagName: 'v1',
-          uploadUrl: 'u',
-          htmlUrl: 'h',
-          draft: true,
-          prerelease: false,
-          assets: [],
-        })
-        .mockResolvedValueOnce({
-          releaseId: 3,
-          tagName: 'v1',
-          uploadUrl: 'u',
-          htmlUrl: 'h',
-          draft: true,
-          prerelease: false,
-          assets: [],
-        }),
+        .mockResolvedValueOnce(mockRelease)
+        .mockResolvedValueOnce(mockRelease),
       listReleaseAssets: vi.fn().mockResolvedValue([
         {
           id: 10,
@@ -133,7 +129,7 @@ describe('uploadReleaseAssets', () => {
         mode: 'upload',
         repository: 'o/r',
         token: 't',
-        releaseId: 3,
+        releaseId: mockRelease.releaseId,
         patterns: ['dist/*.tgz'],
         overwrite: true,
         failOnUnmatchedFiles: true,
@@ -151,25 +147,27 @@ describe('uploadReleaseAssets', () => {
       { path: '/tmp/a.tgz', name: 'a.tgz' },
     ])
 
+    const mockRelease = {
+      releaseId: 3,
+      tagName: 'v1',
+      uploadUrl: 'u',
+      htmlUrl: 'h',
+      draft: true,
+      prerelease: false,
+      assets: [],
+    }
+
+    const mockExistingAsset = {
+      id: 10,
+      name: 'a.tgz',
+      size: 1,
+      contentType: 'application/gzip',
+      downloadUrl: 'x',
+    }
+
     const api = buildApi({
-      getReleaseById: vi.fn().mockResolvedValue({
-        id: 3,
-        tagName: 'v1',
-        uploadUrl: 'u',
-        htmlUrl: 'h',
-        draft: true,
-        prerelease: false,
-        assets: [],
-      }),
-      listReleaseAssets: vi.fn().mockResolvedValue([
-        {
-          id: 10,
-          name: 'a.tgz',
-          size: 1,
-          contentType: 'application/gzip',
-          downloadUrl: 'x',
-        },
-      ]),
+      getReleaseById: vi.fn().mockResolvedValue(mockRelease),
+      listReleaseAssets: vi.fn().mockResolvedValue([mockExistingAsset]),
     })
 
     await expect(
@@ -178,7 +176,7 @@ describe('uploadReleaseAssets', () => {
           mode: 'upload',
           repository: 'o/r',
           token: 't',
-          releaseId: 3,
+          releaseId: mockRelease.releaseId,
           patterns: ['dist/*.tgz'],
           overwrite: false,
           failOnUnmatchedFiles: true,
@@ -195,16 +193,18 @@ describe('uploadReleaseAssets', () => {
       { path: '/tmp/macos/a.tgz', name: 'a.tgz' },
     ])
 
+    const mockRelease = {
+      releaseId: 3,
+      tagName: 'v1',
+      uploadUrl: 'u',
+      htmlUrl: 'h',
+      draft: true,
+      prerelease: false,
+      assets: [],
+    }
+
     const api = buildApi({
-      getReleaseById: vi.fn().mockResolvedValue({
-        releaseId: 3,
-        tagName: 'v1',
-        uploadUrl: 'u',
-        htmlUrl: 'h',
-        draft: true,
-        prerelease: false,
-        assets: [],
-      }),
+      getReleaseById: vi.fn().mockResolvedValue(mockRelease),
     })
 
     await expect(
@@ -213,7 +213,7 @@ describe('uploadReleaseAssets', () => {
           mode: 'upload',
           repository: 'o/r',
           token: 't',
-          releaseId: 3,
+          releaseId: mockRelease.releaseId,
           patterns: ['dist/**/*.tgz'],
           overwrite: false,
           failOnUnmatchedFiles: true,
