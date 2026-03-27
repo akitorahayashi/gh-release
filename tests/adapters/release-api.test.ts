@@ -143,7 +143,7 @@ describe('createGitHubReleaseApi', () => {
       })
 
       expect(result).toEqual({
-        id: 123,
+        releaseId: 123,
         tagName: 'v1.0.0',
         uploadUrl: 'https://uploads.example.test/release/123{?name,label}',
         htmlUrl: 'https://example.test/release/123',
@@ -236,7 +236,7 @@ describe('createGitHubReleaseApi', () => {
       )
 
       expect(result).toEqual({
-        id: 123,
+        releaseId: 123,
         tagName: 'v1.0.0',
         uploadUrl: 'https://uploads.example.test/release/123{?name,label}',
         htmlUrl: 'https://example.test/release/123',
@@ -293,7 +293,7 @@ describe('createGitHubReleaseApi', () => {
       const result = await api.getReleaseById('octo/repo', 123)
 
       expect(result).toEqual({
-        id: 123,
+        releaseId: 123,
         tagName: 'v1.0.0',
         uploadUrl: 'https://uploads.example.test/release/123{?name,label}',
         htmlUrl: 'https://example.test/release/123',
@@ -445,7 +445,7 @@ describe('createGitHubReleaseApi', () => {
       })
 
       const release = {
-        id: 123,
+        releaseId: 123,
         tagName: 'v1.0.0',
         uploadUrl: 'https://uploads.example.test/release/123{?name,label}',
         htmlUrl: 'https://example.test/release/123',
@@ -483,7 +483,7 @@ describe('createGitHubReleaseApi', () => {
       vi.mocked(readFile).mockRejectedValue(new Error('File read failed'))
 
       const release = {
-        id: 123,
+        releaseId: 123,
         tagName: 'v1.0.0',
         uploadUrl: 'https://uploads.example.test/release/123{?name,label}',
         htmlUrl: 'https://example.test/release/123',
@@ -508,7 +508,7 @@ describe('createGitHubReleaseApi', () => {
       uploadReleaseAsset.mockRejectedValue(new Error('API request failed'))
 
       const release = {
-        id: 123,
+        releaseId: 123,
         tagName: 'v1.0.0',
         uploadUrl: 'https://uploads.example.test/release/123{?name,label}',
         htmlUrl: 'https://example.test/release/123',
