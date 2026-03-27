@@ -4,6 +4,7 @@ import {
   GitHubApiError,
   type GitHubReleaseApi,
 } from '../../src/adapters/github/release-api'
+import type { PrepareActionRequest } from '../../src/action/request'
 
 vi.mock('../../src/adapters/time/sleep', () => ({
   sleep: vi.fn().mockResolvedValue(undefined),
@@ -24,6 +25,25 @@ function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
 }
 
 describe('prepareRelease', () => {
+  const baseRequest: PrepareActionRequest = {
+    mode: 'prepare',
+    repository: 'o/r',
+    token: 't',
+    tag: 'v1',
+    create: true,
+    metadata: {
+      name: 'R',
+      body: undefined,
+      bodyPath: undefined,
+      generateNotes: false,
+      generateNotesProvided: true,
+      prerelease: false,
+      prereleaseProvided: true,
+      makeLatest: undefined,
+      makeLatestProvided: false,
+    },
+  }
+
   it('updates existing release and reports created false', async () => {
     const api = buildApi({
       findReleasesByTag: vi.fn().mockResolvedValue([
@@ -49,27 +69,7 @@ describe('prepareRelease', () => {
       }),
     })
 
-    const result = await prepareRelease(
-      {
-        mode: 'prepare',
-        repository: 'o/r',
-        token: 't',
-        tag: 'v1',
-        create: true,
-        metadata: {
-          name: 'R',
-          body: undefined,
-          bodyPath: undefined,
-          generateNotes: false,
-          generateNotesProvided: true,
-          prerelease: false,
-          prereleaseProvided: true,
-          makeLatest: undefined,
-          makeLatestProvided: false,
-        },
-      },
-      api,
-    )
+    const result = await prepareRelease(baseRequest, api)
 
     expect(result.created).toBe(false)
     expect(result.releaseId).toBe(7)
@@ -91,29 +91,9 @@ describe('prepareRelease', () => {
       resolveMetadata: vi.fn().mockResolvedValue({}),
     })
 
-    await expect(
-      prepareRelease(
-        {
-          mode: 'prepare',
-          repository: 'o/r',
-          token: 't',
-          tag: 'v1',
-          create: true,
-          metadata: {
-            name: undefined,
-            body: undefined,
-            bodyPath: undefined,
-            generateNotes: false,
-            generateNotesProvided: false,
-            prerelease: false,
-            prereleaseProvided: false,
-            makeLatest: undefined,
-            makeLatestProvided: false,
-          },
-        },
-        api,
-      ),
-    ).rejects.toThrow("Release for tag 'v1' already exists and is published.")
+    await expect(prepareRelease(baseRequest, api)).rejects.toThrow(
+      "Release for tag 'v1' already exists and is published.",
+    )
   })
 
   it('fails when release is missing and create is false', async () => {
@@ -123,27 +103,7 @@ describe('prepareRelease', () => {
     })
 
     await expect(
-      prepareRelease(
-        {
-          mode: 'prepare',
-          repository: 'o/r',
-          token: 't',
-          tag: 'v1',
-          create: false,
-          metadata: {
-            name: undefined,
-            body: undefined,
-            bodyPath: undefined,
-            generateNotes: false,
-            generateNotesProvided: false,
-            prerelease: false,
-            prereleaseProvided: false,
-            makeLatest: undefined,
-            makeLatestProvided: false,
-          },
-        },
-        api,
-      ),
+      prepareRelease({ ...baseRequest, create: false }, api),
     ).rejects.toThrow("No release exists for tag 'v1'")
   })
 
@@ -168,27 +128,7 @@ describe('prepareRelease', () => {
       createDraftRelease,
     })
 
-    const result = await prepareRelease(
-      {
-        mode: 'prepare',
-        repository: 'o/r',
-        token: 't',
-        tag: 'v1',
-        create: true,
-        metadata: {
-          name: 'R',
-          body: undefined,
-          bodyPath: undefined,
-          generateNotes: false,
-          generateNotesProvided: true,
-          prerelease: false,
-          prereleaseProvided: true,
-          makeLatest: undefined,
-          makeLatestProvided: false,
-        },
-      },
-      api,
-    )
+    const result = await prepareRelease(baseRequest, api)
 
     expect(createDraftRelease).toHaveBeenCalledTimes(3)
     expect(result.created).toBe(true)
@@ -206,29 +146,9 @@ describe('prepareRelease', () => {
       createDraftRelease,
     })
 
-    await expect(
-      prepareRelease(
-        {
-          mode: 'prepare',
-          repository: 'o/r',
-          token: 't',
-          tag: 'v1',
-          create: true,
-          metadata: {
-            name: 'R',
-            body: undefined,
-            bodyPath: undefined,
-            generateNotes: false,
-            generateNotesProvided: true,
-            prerelease: false,
-            prereleaseProvided: true,
-            makeLatest: undefined,
-            makeLatestProvided: false,
-          },
-        },
-        api,
-      ),
-    ).rejects.toThrow('Internal Server Error')
+    await expect(prepareRelease(baseRequest, api)).rejects.toThrow(
+      'Internal Server Error',
+    )
 
     expect(createDraftRelease).toHaveBeenCalledTimes(5)
   })
@@ -257,27 +177,7 @@ describe('prepareRelease', () => {
       createDraftRelease,
     })
 
-    const result = await prepareRelease(
-      {
-        mode: 'prepare',
-        repository: 'o/r',
-        token: 't',
-        tag: 'v1',
-        create: true,
-        metadata: {
-          name: 'R',
-          body: undefined,
-          bodyPath: undefined,
-          generateNotes: false,
-          generateNotesProvided: true,
-          prerelease: false,
-          prereleaseProvided: true,
-          makeLatest: undefined,
-          makeLatestProvided: false,
-        },
-      },
-      api,
-    )
+    const result = await prepareRelease(baseRequest, api)
 
     expect(createDraftRelease).toHaveBeenCalledTimes(1)
     expect(result.created).toBe(false)
@@ -309,28 +209,8 @@ describe('prepareRelease', () => {
       resolveMetadata: vi.fn().mockResolvedValue({}),
     })
 
-    await expect(
-      prepareRelease(
-        {
-          mode: 'prepare',
-          repository: 'o/r',
-          token: 't',
-          tag: 'v1',
-          create: true,
-          metadata: {
-            name: undefined,
-            body: undefined,
-            bodyPath: undefined,
-            generateNotes: false,
-            generateNotesProvided: false,
-            prerelease: false,
-            prereleaseProvided: false,
-            makeLatest: undefined,
-            makeLatestProvided: false,
-          },
-        },
-        api,
-      ),
-    ).rejects.toThrow("Multiple releases already exist for tag 'v1'")
+    await expect(prepareRelease(baseRequest, api)).rejects.toThrow(
+      "Multiple releases already exist for tag 'v1'",
+    )
   })
 })
