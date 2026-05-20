@@ -1,10 +1,10 @@
-import { readFile } from 'node:fs/promises'
-import { basename, resolve } from 'node:path'
-import fg from 'fast-glob'
+import { readFile } from 'node:fs/promises';
+import { basename, resolve } from 'node:path';
+import fg from 'fast-glob';
 
 export interface ReleaseUploadFile {
-  path: string
-  name: string
+  path: string;
+  name: string;
 }
 
 export async function resolveUploadFiles(
@@ -16,21 +16,21 @@ export async function resolveUploadFiles(
     onlyFiles: true,
     unique: true,
     dot: true,
-  })
+  });
 
   return matches
     .sort((left, right) => left.localeCompare(right))
     .map((relativePath) => {
-      const absolutePath = resolve(workingDirectory, relativePath)
+      const absolutePath = resolve(workingDirectory, relativePath);
       return {
         path: absolutePath,
         name: basename(relativePath),
-      }
-    })
+      };
+    });
 }
 
 export async function readReleaseBodyFromPath(
   pathValue: string,
 ): Promise<string> {
-  return readFile(pathValue, 'utf8')
+  return readFile(pathValue, 'utf8');
 }
