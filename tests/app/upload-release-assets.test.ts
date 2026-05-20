@@ -1,12 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
-import { uploadReleaseAssets } from '../../src/app/upload-release-assets'
-import type { GitHubReleaseApi } from '../../src/adapters/github/release-api'
+import { describe, expect, it, vi } from 'vitest';
+import { uploadReleaseAssets } from '../../src/app/upload-release-assets';
+import type { GitHubReleaseApi } from '../../src/adapters/github/release-api';
 
 vi.mock('../../src/adapters/fs/release-files', () => ({
   resolveUploadFiles: vi.fn(),
-}))
+}));
 
-import { resolveUploadFiles } from '../../src/adapters/fs/release-files'
+import { resolveUploadFiles } from '../../src/adapters/fs/release-files';
 
 function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
   return {
@@ -19,12 +19,12 @@ function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
     uploadReleaseAsset: vi.fn(),
     resolveMetadata: vi.fn(),
     ...overrides,
-  }
+  };
 }
 
 describe('uploadReleaseAssets', () => {
   it('returns default metadata gracefully when failOnUnmatchedFiles is false and files input matches nothing', async () => {
-    vi.mocked(resolveUploadFiles).mockResolvedValue([])
+    vi.mocked(resolveUploadFiles).mockResolvedValue([]);
 
     const mockRelease = {
       releaseId: 3,
@@ -34,11 +34,11 @@ describe('uploadReleaseAssets', () => {
       draft: true,
       prerelease: false,
       assets: [],
-    }
+    };
 
     const api = buildApi({
       getReleaseById: vi.fn().mockResolvedValue(mockRelease),
-    })
+    });
 
     const result = await uploadReleaseAssets(
       {
@@ -52,7 +52,7 @@ describe('uploadReleaseAssets', () => {
         workingDirectory: '.',
       },
       api,
-    )
+    );
 
     expect(result).toEqual({
       releaseId: mockRelease.releaseId,
@@ -62,11 +62,11 @@ describe('uploadReleaseAssets', () => {
       created: false,
       draft: mockRelease.draft,
       uploadedAssets: [],
-    })
-  })
+    });
+  });
 
   it('fails when files input is empty', async () => {
-    const api = buildApi({})
+    const api = buildApi({});
 
     await expect(
       uploadReleaseAssets(
@@ -82,13 +82,13 @@ describe('uploadReleaseAssets', () => {
         },
         api,
       ),
-    ).rejects.toThrow("Input 'files' must include at least one path")
-  })
+    ).rejects.toThrow("Input 'files' must include at least one path");
+  });
 
   it('replaces an existing asset only when overwrite is true', async () => {
     vi.mocked(resolveUploadFiles).mockResolvedValue([
       { path: '/tmp/a.tgz', name: 'a.tgz' },
-    ])
+    ]);
 
     const mockRelease = {
       releaseId: 3,
@@ -98,7 +98,7 @@ describe('uploadReleaseAssets', () => {
       draft: true,
       prerelease: false,
       assets: [],
-    }
+    };
 
     const api = buildApi({
       getReleaseById: vi
@@ -122,7 +122,7 @@ describe('uploadReleaseAssets', () => {
         contentType: 'application/gzip',
         downloadUrl: 'y',
       }),
-    })
+    });
 
     const result = await uploadReleaseAssets(
       {
@@ -136,16 +136,16 @@ describe('uploadReleaseAssets', () => {
         workingDirectory: '.',
       },
       api,
-    )
+    );
 
-    expect(result.uploadedAssets).toHaveLength(1)
-    expect(api.deleteReleaseAsset).toHaveBeenCalledWith('o/r', 10)
-  })
+    expect(result.uploadedAssets).toHaveLength(1);
+    expect(api.deleteReleaseAsset).toHaveBeenCalledWith('o/r', 10);
+  });
 
   it('fails when an asset already exists and overwrite is false', async () => {
     vi.mocked(resolveUploadFiles).mockResolvedValue([
       { path: '/tmp/a.tgz', name: 'a.tgz' },
-    ])
+    ]);
 
     const mockRelease = {
       releaseId: 3,
@@ -155,7 +155,7 @@ describe('uploadReleaseAssets', () => {
       draft: true,
       prerelease: false,
       assets: [],
-    }
+    };
 
     const mockExistingAsset = {
       id: 10,
@@ -163,12 +163,12 @@ describe('uploadReleaseAssets', () => {
       size: 1,
       contentType: 'application/gzip',
       downloadUrl: 'x',
-    }
+    };
 
     const api = buildApi({
       getReleaseById: vi.fn().mockResolvedValue(mockRelease),
       listReleaseAssets: vi.fn().mockResolvedValue([mockExistingAsset]),
-    })
+    });
 
     await expect(
       uploadReleaseAssets(
@@ -184,14 +184,16 @@ describe('uploadReleaseAssets', () => {
         },
         api,
       ),
-    ).rejects.toThrow("Asset 'a.tgz' already exists and overwrite is disabled.")
-  })
+    ).rejects.toThrow(
+      "Asset 'a.tgz' already exists and overwrite is disabled.",
+    );
+  });
 
   it('fails when multiple matched files resolve to the same asset name', async () => {
     vi.mocked(resolveUploadFiles).mockResolvedValue([
       { path: '/tmp/linux/a.tgz', name: 'a.tgz' },
       { path: '/tmp/macos/a.tgz', name: 'a.tgz' },
-    ])
+    ]);
 
     const mockRelease = {
       releaseId: 3,
@@ -201,11 +203,11 @@ describe('uploadReleaseAssets', () => {
       draft: true,
       prerelease: false,
       assets: [],
-    }
+    };
 
     const api = buildApi({
       getReleaseById: vi.fn().mockResolvedValue(mockRelease),
-    })
+    });
 
     await expect(
       uploadReleaseAssets(
@@ -223,6 +225,6 @@ describe('uploadReleaseAssets', () => {
       ),
     ).rejects.toThrow(
       "Upload matched multiple files in working directory '.' that resolve to the same asset name: a.tgz.",
-    )
-  })
-})
+    );
+  });
+});

@@ -1,29 +1,29 @@
-import type { ActionResult } from '../action/outputs'
-import type { PublishActionRequest } from '../action/request'
+import type { ActionResult } from '../action/outputs';
+import type { PublishActionRequest } from '../action/request';
 import {
   createGitHubReleaseApi,
   type GitHubReleaseApi,
-} from '../adapters/github/release-api'
+} from '../adapters/github/release-api';
 
 export async function publishRelease(
   request: PublishActionRequest,
   api: GitHubReleaseApi = createGitHubReleaseApi(request.token),
 ): Promise<ActionResult> {
   if (!request.publish) {
-    throw new Error("Mode 'publish' requires input 'publish' to be true.")
+    throw new Error("Mode 'publish' requires input 'publish' to be true.");
   }
 
   const release = await api.getReleaseById(
     request.repository,
     request.releaseId,
-  )
-  const metadata = await api.resolveMetadata(request.metadata)
+  );
+  const metadata = await api.resolveMetadata(request.metadata);
   const updated = await api.updateRelease(
     request.repository,
     release.releaseId,
     metadata,
     false,
-  )
+  );
 
   return {
     releaseId: updated.releaseId,
@@ -33,5 +33,5 @@ export async function publishRelease(
     created: false,
     draft: updated.draft,
     uploadedAssets: [],
-  }
+  };
 }

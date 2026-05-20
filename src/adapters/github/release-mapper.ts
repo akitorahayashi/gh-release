@@ -1,24 +1,24 @@
 import type {
   ReleaseAssetRecord,
   ReleaseRecord,
-} from '../../domain/release-record'
+} from '../../domain/release-record';
 
 interface GitHubReleaseAssetLike {
-  id: number
-  name: string
-  size: number
-  content_type: string
-  browser_download_url: string
+  id: number;
+  name: string;
+  size: number;
+  content_type: string;
+  browser_download_url: string;
 }
 
 interface GitHubReleaseLike {
-  id: number
-  tag_name: string
-  upload_url: string
-  html_url: string
-  draft: boolean
-  prerelease: boolean
-  assets?: GitHubReleaseAssetLike[]
+  id: number;
+  tag_name: string;
+  upload_url: string;
+  html_url: string;
+  draft: boolean;
+  prerelease: boolean;
+  assets?: GitHubReleaseAssetLike[];
 }
 
 export function mapReleaseAsset(
@@ -30,7 +30,7 @@ export function mapReleaseAsset(
     size: asset.size,
     contentType: asset.content_type,
     downloadUrl: asset.browser_download_url,
-  }
+  };
 }
 
 export function mapRelease(record: GitHubReleaseLike): ReleaseRecord {
@@ -42,5 +42,5 @@ export function mapRelease(record: GitHubReleaseLike): ReleaseRecord {
     draft: record.draft,
     prerelease: record.prerelease,
     assets: (record.assets ?? []).map(mapReleaseAsset),
-  }
+  };
 }

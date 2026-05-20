@@ -1,11 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { resolveActionRequest } from '../../src/action/request'
-import * as core from '@actions/core'
-import * as github from '@actions/github'
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { resolveActionRequest } from '../../src/action/request';
+import * as core from '@actions/core';
+import * as github from '@actions/github';
 
 vi.mock('@actions/core', () => ({
   getInput: vi.fn(),
-}))
+}));
 
 vi.mock('@actions/github', () => ({
   context: {
@@ -14,56 +14,56 @@ vi.mock('@actions/github', () => ({
       repo: 'widget',
     },
   },
-}))
+}));
 
-const mockedGetInput = vi.mocked(core.getInput)
-void github
+const mockedGetInput = vi.mocked(core.getInput);
+void github;
 
 describe('resolveActionRequest', () => {
   afterEach(() => {
-    mockedGetInput.mockReset()
-  })
+    mockedGetInput.mockReset();
+  });
 
   it('throws when mode is unsupported', () => {
     mockedGetInput.mockImplementation((name: string) => {
       if (name === 'mode') {
-        return 'invalid'
+        return 'invalid';
       }
-      return ''
-    })
+      return '';
+    });
 
     expect(() => resolveActionRequest()).toThrow(
       "Input 'mode' must be one of: prepare, upload, publish.",
-    )
-  })
+    );
+  });
 
   it('normalizes prepare request inputs', () => {
     mockedGetInput.mockImplementation((name: string) => {
       switch (name) {
         case 'mode':
-          return 'prepare'
+          return 'prepare';
         case 'token':
-          return 'tok'
+          return 'tok';
         case 'repository':
-          return ' octo/repo '
+          return ' octo/repo ';
         case 'tag':
-          return ' v1.2.3 '
+          return ' v1.2.3 ';
         case 'create':
-          return 'true'
+          return 'true';
         case 'name':
-          return ' Release v1.2.3 '
+          return ' Release v1.2.3 ';
         case 'body':
-          return ' Notes '
+          return ' Notes ';
         case 'generate_notes':
-          return 'true'
+          return 'true';
         case 'prerelease':
-          return 'false'
+          return 'false';
         case 'make_latest':
-          return 'legacy'
+          return 'legacy';
         default:
-          return ''
+          return '';
       }
-    })
+    });
 
     expect(resolveActionRequest()).toEqual({
       mode: 'prepare',
@@ -82,24 +82,24 @@ describe('resolveActionRequest', () => {
         makeLatest: 'legacy',
         makeLatestProvided: true,
       },
-    })
-  })
+    });
+  });
 
   it('uses github context repository when repository input is omitted', () => {
     mockedGetInput.mockImplementation((name: string) => {
       switch (name) {
         case 'mode':
-          return 'prepare'
+          return 'prepare';
         case 'token':
-          return 'tok'
+          return 'tok';
         case 'tag':
-          return 'v1'
+          return 'v1';
         case 'create':
-          return 'true'
+          return 'true';
         default:
-          return ''
+          return '';
       }
-    })
+    });
 
     expect(resolveActionRequest()).toEqual({
       mode: 'prepare',
@@ -118,55 +118,55 @@ describe('resolveActionRequest', () => {
         makeLatest: undefined,
         makeLatestProvided: false,
       },
-    })
-  })
+    });
+  });
 
   it('rejects metadata inputs in upload mode', () => {
     mockedGetInput.mockImplementation((name: string) => {
       switch (name) {
         case 'mode':
-          return 'upload'
+          return 'upload';
         case 'token':
-          return 'tok'
+          return 'tok';
         case 'release_id':
-          return '101'
+          return '101';
         case 'files':
-          return 'dist/*.tgz'
+          return 'dist/*.tgz';
         case 'name':
-          return 'not-allowed'
+          return 'not-allowed';
         default:
-          return ''
+          return '';
       }
-    })
+    });
 
     expect(() => resolveActionRequest()).toThrow(
       "Mode 'upload' does not allow release metadata inputs",
-    )
-  })
+    );
+  });
 
   it('normalizes upload request settings', () => {
     mockedGetInput.mockImplementation((name: string) => {
       switch (name) {
         case 'mode':
-          return 'upload'
+          return 'upload';
         case 'token':
-          return 'tok'
+          return 'tok';
         case 'repository':
-          return 'octo/repo'
+          return 'octo/repo';
         case 'release_id':
-          return '42'
+          return '42';
         case 'files':
-          return 'dist/a.tgz\ndist/b.tgz\n'
+          return 'dist/a.tgz\ndist/b.tgz\n';
         case 'overwrite':
-          return 'true'
+          return 'true';
         case 'fail_on_unmatched_files':
-          return 'false'
+          return 'false';
         case 'working_directory':
-          return 'build'
+          return 'build';
         default:
-          return ''
+          return '';
       }
-    })
+    });
 
     expect(resolveActionRequest()).toEqual({
       mode: 'upload',
@@ -177,24 +177,24 @@ describe('resolveActionRequest', () => {
       overwrite: true,
       failOnUnmatchedFiles: false,
       workingDirectory: 'build',
-    })
-  })
+    });
+  });
 
   it('requires explicit publish flag in publish mode request', () => {
     mockedGetInput.mockImplementation((name: string) => {
       switch (name) {
         case 'mode':
-          return 'publish'
+          return 'publish';
         case 'token':
-          return 'tok'
+          return 'tok';
         case 'release_id':
-          return '88'
+          return '88';
         case 'publish':
-          return 'true'
+          return 'true';
         default:
-          return ''
+          return '';
       }
-    })
+    });
 
     expect(resolveActionRequest()).toEqual({
       mode: 'publish',
@@ -213,27 +213,27 @@ describe('resolveActionRequest', () => {
         makeLatest: undefined,
         makeLatestProvided: false,
       },
-    })
-  })
+    });
+  });
 
   it('rejects malformed release_id values', () => {
     mockedGetInput.mockImplementation((name: string) => {
       switch (name) {
         case 'mode':
-          return 'upload'
+          return 'upload';
         case 'token':
-          return 'tok'
+          return 'tok';
         case 'release_id':
-          return '123abc'
+          return '123abc';
         case 'files':
-          return 'dist/a.tgz'
+          return 'dist/a.tgz';
         default:
-          return ''
+          return '';
       }
-    })
+    });
 
     expect(() => resolveActionRequest()).toThrow(
       "Input 'release_id' must be a positive integer.",
-    )
-  })
-})
+    );
+  });
+});

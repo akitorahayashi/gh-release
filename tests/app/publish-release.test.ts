@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
-import { publishRelease } from '../../src/app/publish-release'
-import type { GitHubReleaseApi } from '../../src/adapters/github/release-api'
+import { describe, expect, it, vi } from 'vitest';
+import { publishRelease } from '../../src/app/publish-release';
+import type { GitHubReleaseApi } from '../../src/adapters/github/release-api';
 
 function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
   return {
@@ -13,12 +13,12 @@ function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
     uploadReleaseAsset: vi.fn(),
     resolveMetadata: vi.fn(),
     ...overrides,
-  }
+  };
 }
 
 describe('publishRelease', () => {
   it('requires explicit publish confirmation', async () => {
-    const api = buildApi({})
+    const api = buildApi({});
 
     await expect(
       publishRelease(
@@ -42,8 +42,8 @@ describe('publishRelease', () => {
         },
         api,
       ),
-    ).rejects.toThrow("Mode 'publish' requires input 'publish' to be true.")
-  })
+    ).rejects.toThrow("Mode 'publish' requires input 'publish' to be true.");
+  });
 
   it('publishes draft release and returns normalized output', async () => {
     const api = buildApi({
@@ -66,7 +66,7 @@ describe('publishRelease', () => {
         prerelease: false,
         assets: [],
       }),
-    })
+    });
 
     const result = await publishRelease(
       {
@@ -88,9 +88,9 @@ describe('publishRelease', () => {
         },
       },
       api,
-    )
+    );
 
-    expect(result.draft).toBe(false)
-    expect(result.releaseId).toBe(9)
-  })
-})
+    expect(result.draft).toBe(false);
+    expect(result.releaseId).toBe(9);
+  });
+});

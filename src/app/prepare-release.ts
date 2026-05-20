@@ -1,43 +1,43 @@
-import type { PrepareActionRequest } from '../action/request'
-import type { ActionResult } from '../action/outputs'
+import type { PrepareActionRequest } from '../action/request';
+import type { ActionResult } from '../action/outputs';
 import {
   createGitHubReleaseApi,
   GitHubApiError,
   type GitHubReleaseApi,
-} from '../adapters/github/release-api'
-import { sleep } from '../adapters/time/sleep'
+} from '../adapters/github/release-api';
+import { sleep } from '../adapters/time/sleep';
 import {
   computeBackoffDelayMs,
   isConflictStatus,
   isRetryableGitHubStatus,
   releaseMutationRetryPolicy,
-} from '../domain/retry-policy'
-import type { ReleaseRecord } from '../domain/release-record'
+} from '../domain/retry-policy';
+import type { ReleaseRecord } from '../domain/release-record';
 
 export async function prepareRelease(
   request: PrepareActionRequest,
   api: GitHubReleaseApi = createGitHubReleaseApi(request.token),
 ): Promise<ActionResult> {
-  const metadata = await api.resolveMetadata(request.metadata)
+  const metadata = await api.resolveMetadata(request.metadata);
 
   const existing = selectPrepareRelease(
     request.tagName,
     await api.findReleasesByTag(request.repository, request.tagName),
-  )
+  );
   if (existing) {
     const updated = await api.updateRelease(
       request.repository,
       existing.releaseId,
       metadata,
       existing.draft,
-    )
-    return toActionResult(updated, false)
+    );
+    return toActionResult(updated, false);
   }
 
   if (!request.create) {
     throw new Error(
       `No release exists for tag '${request.tagName}'. Set 'create' to true in prepare mode to create a draft release.`,
-    )
+    );
   }
 
   for (
@@ -50,38 +50,38 @@ export async function prepareRelease(
         request.repository,
         request.tagName,
         metadata,
-      )
-      return toActionResult(created, true)
+      );
+      return toActionResult(created, true);
     } catch (error: unknown) {
       if (!(error instanceof GitHubApiError)) {
-        throw error
+        throw error;
       }
 
       if (isConflictStatus(error.status)) {
         const converged = selectPrepareRelease(
           request.tagName,
           await api.findReleasesByTag(request.repository, request.tagName),
-        )
+        );
         if (converged) {
-          return toActionResult(converged, false)
+          return toActionResult(converged, false);
         }
       }
 
       const shouldRetry =
         attempt < releaseMutationRetryPolicy.maxAttempts &&
-        isRetryableGitHubStatus(error.status)
+        isRetryableGitHubStatus(error.status);
 
       if (!shouldRetry) {
-        throw error
+        throw error;
       }
 
       await sleep(
         computeBackoffDelayMs(attempt, releaseMutationRetryPolicy.baseDelayMs),
-      )
+      );
     }
   }
 
-  throw new Error('Failed to prepare release after bounded retry.')
+  throw new Error('Failed to prepare release after bounded retry.');
 }
 
 function selectPrepareRelease(
@@ -89,23 +89,23 @@ function selectPrepareRelease(
   releases: ReleaseRecord[],
 ): ReleaseRecord | undefined {
   if (releases.length === 0) {
-    return undefined
+    return undefined;
   }
 
   if (releases.length > 1) {
     throw new Error(
       `Multiple releases already exist for tag '${tag}'. Prepare mode requires exactly one draft release or no release.`,
-    )
+    );
   }
 
-  const [release] = releases
+  const [release] = releases;
   if (!release.draft) {
     throw new Error(
       `Release for tag '${tag}' already exists and is published. Prepare mode only manages draft releases.`,
-    )
+    );
   }
 
-  return release
+  return release;
 }
 
 function toActionResult(
@@ -120,5 +120,5 @@ function toActionResult(
     created,
     draft: release.draft,
     uploadedAssets: [],
-  }
+  };
 }

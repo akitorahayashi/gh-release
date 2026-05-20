@@ -1,17 +1,17 @@
 export interface ReleaseAssetRecord {
-  id: number
-  name: string
-  size: number
-  contentType: string
-  downloadUrl: string
+  id: number;
+  name: string;
+  size: number;
+  contentType: string;
+  downloadUrl: string;
 }
 
 export interface ReleaseRecord {
-  releaseId: number
-  tagName: string
-  uploadUrl: string
-  htmlUrl: string
-  draft: boolean
-  prerelease: boolean
-  assets: ReleaseAssetRecord[]
+  releaseId: number;
+  tagName: string;
+  uploadUrl: string;
+  htmlUrl: string;
+  draft: boolean;
+  prerelease: boolean;
+  assets: ReleaseAssetRecord[];
 }

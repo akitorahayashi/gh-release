@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest';
 import {
   mapRelease,
   mapReleaseAsset,
-} from '../../src/adapters/github/release-mapper'
+} from '../../src/adapters/github/release-mapper';
 
 describe('release mapper', () => {
   it('maps release API payload to repository release record', () => {
@@ -22,7 +22,7 @@ describe('release mapper', () => {
           browser_download_url: 'https://download.example/a.tgz',
         },
       ],
-    })
+    });
 
     expect(record).toEqual({
       releaseId: 101,
@@ -40,8 +40,8 @@ describe('release mapper', () => {
           downloadUrl: 'https://download.example/a.tgz',
         },
       ],
-    })
-  })
+    });
+  });
 
   it('maps release asset payload to repository asset record', () => {
     expect(
@@ -58,6 +58,6 @@ describe('release mapper', () => {
       size: 20,
       contentType: 'application/gzip',
       downloadUrl: 'https://download.example/b.tgz',
-    })
-  })
-})
+    });
+  });
+});
