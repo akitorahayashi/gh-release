@@ -1,5 +1,5 @@
-import * as github from '@actions/github';
 import { readFile } from 'node:fs/promises';
+import * as github from '@actions/github';
 import type {
   ReleaseMetadataInput,
   ResolvedReleaseMetadata,

@@ -1,22 +1,22 @@
 import * as github from '@actions/github';
 import {
+  parseFilePatterns,
+  type UploadAssetPlan,
+} from '../domain/release-asset-plan';
+import {
   normalizeMakeLatest,
   type ReleaseMetadataInput,
   validateBodyInputs,
 } from '../domain/release-metadata';
-import {
-  parseFilePatterns,
-  type UploadAssetPlan,
-} from '../domain/release-asset-plan';
 import { parseReleaseMode, type ReleaseMode } from '../domain/release-mode';
-import { assertMetadataOwnership } from '../domain/release-write-policy';
 import {
+  type ExistingReleaseTarget,
   normalizeRepository,
   normalizeTag,
-  parseReleaseId,
-  type ExistingReleaseTarget,
   type PrepareReleaseTarget,
+  parseReleaseId,
 } from '../domain/release-target';
+import { assertMetadataOwnership } from '../domain/release-write-policy';
 import {
   parseOptionalBooleanInput,
   readBooleanInput,

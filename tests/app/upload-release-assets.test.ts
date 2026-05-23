@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { uploadReleaseAssets } from '../../src/app/upload-release-assets';
 import type { GitHubReleaseApi } from '../../src/adapters/github/release-api';
+import { uploadReleaseAssets } from '../../src/app/upload-release-assets';
 
 vi.mock('../../src/adapters/fs/release-files', () => ({
   resolveUploadFiles: vi.fn(),

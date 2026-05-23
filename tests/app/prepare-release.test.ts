@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { prepareRelease } from '../../src/app/prepare-release';
+import type { PrepareActionRequest } from '../../src/action/request';
 import {
   GitHubApiError,
   type GitHubReleaseApi,
 } from '../../src/adapters/github/release-api';
-import type { PrepareActionRequest } from '../../src/action/request';
+import { prepareRelease } from '../../src/app/prepare-release';
 
 vi.mock('../../src/adapters/time/sleep', () => ({
   sleep: vi.fn().mockResolvedValue(undefined),

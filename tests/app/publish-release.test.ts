@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { publishRelease } from '../../src/app/publish-release';
 import type { GitHubReleaseApi } from '../../src/adapters/github/release-api';
+import { publishRelease } from '../../src/app/publish-release';
 
 function buildApi(overrides: Partial<GitHubReleaseApi>): GitHubReleaseApi {
   return {

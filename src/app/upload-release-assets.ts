@@ -1,10 +1,10 @@
 import type { ActionResult } from '../action/outputs';
 import type { UploadActionRequest } from '../action/request';
+import { resolveUploadFiles } from '../adapters/fs/release-files';
 import {
   createGitHubReleaseApi,
   type GitHubReleaseApi,
 } from '../adapters/github/release-api';
-import { resolveUploadFiles } from '../adapters/fs/release-files';
 import {
   assertUniqueUploadAssetNames,
   ensureUploadHasPatterns,
