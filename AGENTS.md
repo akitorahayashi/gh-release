@@ -14,9 +14,9 @@ src/adapters/ owns GitHub API, filesystem, and time integrations.
 
 ## Verification
 
-just fix applies formatting and safe lint fixes.
-just check runs formatter, lint, and typecheck validation.
-just test runs repository tests.
+pnpm run fix applies formatting and safe lint fixes.
+pnpm run check runs Biome checks and typecheck validation.
+pnpm run test runs repository tests.
 
 ## Documentation
 

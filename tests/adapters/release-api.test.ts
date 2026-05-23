@@ -1,10 +1,10 @@
+import { readFile } from 'node:fs/promises';
+import * as github from '@actions/github';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createGitHubReleaseApi,
   GitHubApiError,
 } from '../../src/adapters/github/release-api';
-import * as github from '@actions/github';
-import { readFile } from 'node:fs/promises';
 
 const listReleases = vi.fn();
 const createRelease = vi.fn();

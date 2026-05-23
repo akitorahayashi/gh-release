@@ -1,18 +1,18 @@
-import type { PrepareActionRequest } from '../action/request';
 import type { ActionResult } from '../action/outputs';
+import type { PrepareActionRequest } from '../action/request';
 import {
   createGitHubReleaseApi,
   GitHubApiError,
   type GitHubReleaseApi,
 } from '../adapters/github/release-api';
 import { sleep } from '../adapters/time/sleep';
+import type { ReleaseRecord } from '../domain/release-record';
 import {
   computeBackoffDelayMs,
   isConflictStatus,
   isRetryableGitHubStatus,
   releaseMutationRetryPolicy,
 } from '../domain/retry-policy';
-import type { ReleaseRecord } from '../domain/release-record';
 
 export async function prepareRelease(
   request: PrepareActionRequest,

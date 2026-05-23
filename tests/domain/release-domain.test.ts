@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { parseReleaseMode } from '../../src/domain/release-mode';
+import {
+  ensureUploadHasPatterns,
+  parseFilePatterns,
+} from '../../src/domain/release-asset-plan';
 import {
   normalizeMakeLatest,
   validateBodyInputs,
 } from '../../src/domain/release-metadata';
-import {
-  parseFilePatterns,
-  ensureUploadHasPatterns,
-} from '../../src/domain/release-asset-plan';
+import { parseReleaseMode } from '../../src/domain/release-mode';
+import { parseReleaseId } from '../../src/domain/release-target';
 import { assertMetadataOwnership } from '../../src/domain/release-write-policy';
 import {
   computeBackoffDelayMs,
   isRetryableGitHubStatus,
 } from '../../src/domain/retry-policy';
-import { parseReleaseId } from '../../src/domain/release-target';
 
 describe('domain contracts', () => {
   it('parses supported lifecycle modes', () => {
